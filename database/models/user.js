@@ -1,17 +1,19 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
-    phone_number: {
-      type: DataTypes.STRING,
-      primaryKey: true
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: Sequelize.UUIDV4,
+      primaryKey: true,
     },
-    name: DataTypes.STRING,
-    pair_number: DataTypes.STRING,
-    pair_date_utc: DataTypes.DATE
+    firstName: DataTypes.STRING,
+    lastName: DataTypes.STRING,
+    email: DataTypes.STRING,
   }, {});
+
   User.associate = function(models) {
     // associations can be defined here
-    User.hasOne(models.User, {
+    User.hasMany(models.Transaction, {
       foreignKey: 'pair_number',
       as: 'pair',
       onDelete: 'CASCADE',
