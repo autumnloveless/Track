@@ -1,12 +1,15 @@
 const models = require('../database/models');
+const bcrypt = require('bcrypt')
 
-const createUser = async (phone_number, name=null) => {
+const createUser = async (user) => {
   try {
-    const user = await models.User.create({
-      phone_number:phone_number,
-      name: name,
+    const newUser = await models.User.create({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      password: await bcrypt.hash(user.password,10),
+      email: user.email
     });
-    return user
+    return newUser
   } catch (error) {
     console.log(error)
   }
@@ -40,5 +43,5 @@ const updateUser = async (newData, id) =>
 }
 
 module.exports = {
-  createUser,getUserById,deleteData,updateUser,unpair,pair
+  createUser,getUserById,deleteData,updateUser
 }
