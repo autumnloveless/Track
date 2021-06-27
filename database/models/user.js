@@ -8,9 +8,19 @@ module.exports = (sequelize, DataTypes) => {
     },
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
-    email: DataTypes.STRING,
+    email: { 
+      type: DataTypes.STRING,
+      unique: true,
+      validate: { isEmail: true }
+    },
+    permissionLevel: DataTypes.INTEGER,
     password: DataTypes.STRING
   }, {});
-
+  User.associate = function(models) {
+    // associations can be defined here
+    User.hasMany(models.Auth, {
+      onDelete: 'CASCADE',
+    });
+  };
   return User;
 };

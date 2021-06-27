@@ -1,61 +1,21 @@
-const models = require('../database/models');
-const bcrypt = require('bcrypt');
-
-const createUser = async (user) => {
-  try {
-    const newUser = await models.User.create({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      password: await bcrypt.hash(user.password,10),
-      email: user.email
-    });
-    return newUser
-  } catch (error) {
-    console.log(error)
-  }
-}
+const usersDB = require('./database/controllers/users');
   
-const getUserById = async (id) => {
-  try {
-    const user = await models.User.findOne({
-      where: { id: id }
-    });
-    if (user) {
-      return user;
-    }
-    console.log("Couldn't Find User with ID",id)
-  } catch (error) {
-    console.log(error)
-  }
+exports.getUserById = async (req, res) => {
+  user = await usersDB.getUserById(req.params.userId)
+  res.status(200).json({ "success": true, "user": user })
 }
 
-const getUserByEmail = async (email) => {
-  try {
-    const user = await models.User.findOne({
-      where: { email: email }
-    });
-    if (user) {
-      return user;
-    }
-    console.log("Couldn't Find User with ID",id)
-  } catch (error) {
-    console.log(error)
-  }
+exports.getUsers = async (req, res) => {
+  users = await usersDB.getUsers()
+  res.status(200).json({ "success": true, "users": users })
 }
 
-const deleteData = async (user) =>
-{
-  const response = await user.destroy({ force: true })
-  return response;
+exports.deleteUser = async (req, res) => {
+  result = await userController.deleteUser(req.params.userId)
+  res.status(200).json({ "success": result })
 }
 
-const updateUser = async (newData, id) =>
-{
-  let user = await getUserById(id);
-  updatedUser = await user.update(newData)
-  return updatedUser;
-}
-
-module.exports = {
-  createUser,getUserById,getUserByEmail,deleteData,updateUser
+exports.updateUser = async (req, res) => {
+  user = await usersDB.updateUser(req.params.userId, req.body)
+  res.status(200).json({ "success": true, "user": user })
 }
