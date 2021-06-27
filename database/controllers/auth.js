@@ -2,7 +2,7 @@ const models = require("../models");
 const jwt = require("jsonwebtoken");
 
 exports.generateToken = async (user) => {
-  const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m" });
+  const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
   const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
   await createAuth({
     userId: user.id,
@@ -10,14 +10,14 @@ exports.generateToken = async (user) => {
     refreshToken: refreshToken,
   });
 
-  return { accessToken: accessToken, refreshToken: refreshToken };
+  return { success: true, accessToken: accessToken, refreshToken: refreshToken };
 };
 
 exports.regenerateToken = async (user) => {
-  const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1m" });
+  const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
   await updateAuth({ id: user.id, accessToken: accessToken });
 
-  return accessToken;
+  return { success: true, accessToken: accessToken };
 };
 
 exports.createAuth = async (auth) => {
@@ -26,6 +26,7 @@ exports.createAuth = async (auth) => {
     accessToken: auth.accessToken,
     refreshToken: auth.refreshToken,
   });
+  return { success: true, auth: newAuth }
 };
 
 exports.getAuthById = async (id) => {
@@ -34,17 +35,17 @@ exports.getAuthById = async (id) => {
 };
 
 exports.deleteAuth = async (refreshToken) => {
-  auth = await getAuthByRefreshToken(refreshToken);
-  if (!auth.success) { return auth; }
-  await auth.destroy({ force: true });
+  result = await getAuthByRefreshToken(refreshToken);
+  if (!result.success) { return result; }
+  await result.auth.destroy({ force: true });
   return { success: true };
 };
 
 exports.updateAuth = async (newData) => {
-  auth = await getAuthById(newData.id);
-  if (!auth.success) { return auth; }
-  updatedAuth = await auth.update(newData);
-  return { success: true };
+  result = await getAuthById(newData.id);
+  if (!result.success) { return result; }
+  updatedAuth = await result.auth.update(newData);
+  return { success: true, auth: updateAuth };
 };
 
 exports.getAuthByRefreshToken = async (refreshToken) => {

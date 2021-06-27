@@ -9,7 +9,7 @@ exports.createUser = async (user) => {
       email: user.email,
       permissionLevel: user.permissionLevel,
     });
-    return newUser;
+    return { success: true, user: newUser };
   } catch (error) {
     throw new Error(error.errors.map((e) => e.message).join(", "));
   }
@@ -20,9 +20,9 @@ exports.getUserById = async (id) => {
     where: { id: id },
   });
   if (user) {
-    return user;
+    return { success: true, user: user };
   } else {
-    return { error: "User Not Found" };
+    return { success: false, error: "User Not Found" };
   }
 };
 
@@ -31,43 +31,28 @@ exports.getUsers = async (query = null) => {
     ? await models.User.findAll({ where: query })
     : await models.User.findAll();
   if (users) {
-    return users;
+    return { success: true, users: users };
   } else {
-    return { error: "Users Not Found" };
+    return { success: false, error: "Users Not Found" };
   }
 };
 
 exports.getUserByEmail = async (email) => {
-  try {
-    const user = await models.User.findOne({
-      where: { email: email },
-    });
-    if (user) {
-      return user;
-    }
-    console.log("Couldn't Find User with ID", id);
-  } catch (error) {
-    console.log(error);
-  }
+  const user = await models.User.findOne({ where: { email: email } });
+  return user ? { "success": true, "user": user } : { "success": false, "error": "User Not Found" };
 };
 
 exports.deleteUser = async (id) => {
-  let user = await getUserById(id);
-  if (user.id == null) {
-    return false;
-  }
-  await user.destroy({ force: true });
-  return true;
+  let result = await getUserById(id);
+  if (!result.success) { return result }
+  await result.user.destroy({ force: true });
+  return { "success": true };
 };
 
 exports.updateUser = async (id, newData) => {
-  if (req.body.password) {
-    req.body.password = await bcrypt.hash(user.password, 10);
-  }
-  let user = await getUserById(id);
-  if (user.id == null) {
-    return user;
-  }
-  updatedUser = await user.update(newData);
-  return updatedUser;
+  if (req.body.password) { req.body.password = await bcrypt.hash(user.password, 10); }
+  let result = await getUserById(id);
+  if (!result.success) { return result; }
+  updatedUser = await result.user.update(newData);
+  return { "success": true, "user": updatedUser };
 };
