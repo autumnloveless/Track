@@ -1,4 +1,4 @@
-const usersDB = require('./database/controllers/users');
+const usersDB = require('../database/controllers/users');
   
 exports.getUserById = async (req, res) => {
   user = await usersDB.getUserById(req.params.userId)

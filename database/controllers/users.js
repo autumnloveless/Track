@@ -1,3 +1,5 @@
+const models = require("../models");
+
 exports.createUser = async (user) => {
   try {
     const newUser = await models.User.create({

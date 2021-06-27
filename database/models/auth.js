@@ -1,3 +1,4 @@
+
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Auth = sequelize.define('Auth', {
@@ -10,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
     accessToken: DataTypes.STRING,
     refreshToken: DataTypes.STRING,
   }, {});
-  Auth.belongsTo(models.User);
+  Auth.associate = (models) => {
+    Auth.belongsTo(models.User);
+  };
 
   return Auth;
 };

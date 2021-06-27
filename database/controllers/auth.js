@@ -1,4 +1,4 @@
-const models = require("../database/models");
+const models = require("../models");
 const jwt = require("jsonwebtoken");
 
 exports.generateToken = async (user) => {
@@ -20,7 +20,7 @@ exports.regenerateToken = async (user) => {
   return accessToken;
 };
 
-exports.createAuth = (auth) => {
+exports.createAuth = async (auth) => {
   const newAuth = await models.Auth.create({
     userId: auth.userId,
     accessToken: auth.accessToken,
@@ -47,7 +47,7 @@ exports.updateAuth = async (newData) => {
   return { success: true };
 };
 
-exports.getAuthByRefreshToken = (refreshToken) => {
+exports.getAuthByRefreshToken = async (refreshToken) => {
   const auth = await models.Auth.findOne({ where: { refreshToken: refreshToken } });
   return auth ? { success: true, auth: auth } : { success: false, error: "Auth Record Not Found" };
 };

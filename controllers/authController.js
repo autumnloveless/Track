@@ -1,5 +1,5 @@
-const authDB = require("./database/controllers/auth");
-const usersDB = require("./database/controllers/users");
+const authDB = require("../database/controllers/auth");
+const usersDB = require("../database/controllers/users");
 
 exports.refreshToken = async (req, res) => {
     const refreshToken = req.body.token;
