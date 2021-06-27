@@ -1,5 +1,5 @@
 const models = require('../database/models');
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
 
 const createUser = async (user) => {
   try {
@@ -29,6 +29,20 @@ const getUserById = async (id) => {
   }
 }
 
+const getUserByEmail = async (email) => {
+  try {
+    const user = await models.User.findOne({
+      where: { email: email }
+    });
+    if (user) {
+      return user;
+    }
+    console.log("Couldn't Find User with ID",id)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const deleteData = async (user) =>
 {
   const response = await user.destroy({ force: true })
@@ -43,5 +57,5 @@ const updateUser = async (newData, id) =>
 }
 
 module.exports = {
-  createUser,getUserById,deleteData,updateUser
+  createUser,getUserById,getUserByEmail,deleteData,updateUser
 }
