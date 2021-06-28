@@ -6,7 +6,7 @@ const auth = require('./middlewares/authenticate')
 
 const api = express.Router();
 
-api.get('/', auth.authenticateToken, async (req, res) => {
+api.get('/', async (req, res) => {
   res.json('Welcome to the Track API. You can find documentation for accessing it here: ')
 });
 

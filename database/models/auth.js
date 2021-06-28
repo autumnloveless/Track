@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     refreshToken: DataTypes.STRING,
   }, {});
   Auth.associate = (models) => {
-    Auth.belongsTo(models.User);
+    Auth.belongsTo(models.User, { foreignKey: 'userId' });
   };
 
   return Auth;

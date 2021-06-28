@@ -15,7 +15,7 @@ exports.generateToken = async (user) => {
 
 exports.regenerateToken = async (user) => {
   const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
-  await updateAuth({ id: user.id, accessToken: accessToken });
+  await updateAuth({ id: user.id, user: { accessToken: accessToken } });
 
   return { success: true, accessToken: accessToken };
 };
@@ -41,14 +41,16 @@ exports.deleteAuth = async (refreshToken) => {
   return { success: true };
 };
 
-exports.updateAuth = async (newData) => {
-  result = await getAuthById(newData.id);
+exports.updateAuth = async (id, newData) => {
+  result = await getAuthById(id);
   if (!result.success) { return result; }
   updatedAuth = await result.auth.update(newData);
   return { success: true, auth: updateAuth };
 };
 
 exports.getAuthByRefreshToken = async (refreshToken) => {
+  console.log("about to get auth by refresh token")
   const auth = await models.Auth.findOne({ where: { refreshToken: refreshToken } });
+  console.log("got refresh token")
   return auth ? { success: true, auth: auth } : { success: false, error: "Auth Record Not Found" };
 };

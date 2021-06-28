@@ -2,10 +2,12 @@ const authDB = require("../database/controllers/auth");
 const usersDB = require("../database/controllers/users");
 
 exports.refreshToken = async (req, res) => {
+    console.log("made it here")
     const refreshToken = req.body.token;
     if(refreshToken == null) { return res.sendStatus(401) }
     if(!(await authDB.getAuthByRefreshToken(refreshToken)).success) { return res.sendStatus(403) }
     
+    console.log("made it past that point")
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
         if(err) { return res.sendStatus(403) }
         const result = authDB.regenerateToken({ 
