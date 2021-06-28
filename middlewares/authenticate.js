@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const usersDB = require('../database/controllers/users');
 
 exports.authenticateToken = async (req, res, next) => {
@@ -16,7 +17,7 @@ exports.authenticateToken = async (req, res, next) => {
 exports.loginMatch = async (req, res, next) => {
   result = await usersDB.getUserByEmail(req.body.email);
   if (!result.success) { return res.status(400).json({ "success": false, "error": "Invalid email or password"}); }
-  if (await bcrypt.compare(password, result.user.password)){
+  if (await bcrypt.compare(req.body.password, result.user.password)){
     req.user = {
       id: result.user.id,
       email: result.user.email,

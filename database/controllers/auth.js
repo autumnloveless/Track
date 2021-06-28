@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 exports.generateToken = async (user) => {
   const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
   const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
-  await createAuth({
+  await exports.createAuth({
     userId: user.id,
     accessToken: accessToken,
     refreshToken: refreshToken,
@@ -13,10 +13,9 @@ exports.generateToken = async (user) => {
   return { success: true, accessToken: accessToken, refreshToken: refreshToken };
 };
 
-exports.regenerateToken = async (user) => {
+exports.regenerateToken = async (authId, user) => {
   const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
-  await updateAuth({ id: user.id, user: { accessToken: accessToken } });
-
+  result = await exports.updateAuth(authId, { accessToken: accessToken });
   return { success: true, accessToken: accessToken };
 };
 
@@ -35,22 +34,20 @@ exports.getAuthById = async (id) => {
 };
 
 exports.deleteAuth = async (refreshToken) => {
-  result = await getAuthByRefreshToken(refreshToken);
+  result = await exports.getAuthByRefreshToken(refreshToken);
   if (!result.success) { return result; }
   await result.auth.destroy({ force: true });
   return { success: true };
 };
 
 exports.updateAuth = async (id, newData) => {
-  result = await getAuthById(id);
+  result = await exports.getAuthById(id);
   if (!result.success) { return result; }
   updatedAuth = await result.auth.update(newData);
-  return { success: true, auth: updateAuth };
+  return { success: true, auth: updatedAuth };
 };
 
 exports.getAuthByRefreshToken = async (refreshToken) => {
-  console.log("about to get auth by refresh token")
   const auth = await models.Auth.findOne({ where: { refreshToken: refreshToken } });
-  console.log("got refresh token")
   return auth ? { success: true, auth: auth } : { success: false, error: "Auth Record Not Found" };
 };

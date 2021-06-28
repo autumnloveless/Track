@@ -1,18 +1,15 @@
 const models = require("../models");
+const bcrypt = require("bcrypt");
 
 exports.createUser = async (user) => {
-  try {
-    const newUser = await models.User.create({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      password: await bcrypt.hash(user.password, 10),
-      email: user.email,
-      permissionLevel: user.permissionLevel,
-    });
-    return { success: true, user: newUser };
-  } catch (error) {
-    throw new Error(error.errors.map((e) => e.message).join(", "));
-  }
+  const newUser = await models.User.create({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    password: await bcrypt.hash(user.password, 10),
+    email: user.email,
+    permissionLevel: user.permissionLevel,
+  });
+  return { success: true, user: newUser };
 };
 
 exports.getUserById = async (id) => {
