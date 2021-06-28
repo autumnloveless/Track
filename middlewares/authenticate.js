@@ -30,3 +30,11 @@ exports.loginMatch = async (req, res, next) => {
     return res.status(400).json({ "success": false, "error": "Invalid email or password"});
   }
 }
+
+exports.minRole = (requiredPermissionLevel) => async (req, res, next) => {
+  if(req.user.permissionLevel >= requiredPermissionLevel){
+    return next();
+  } else {
+    return res.status(403).json({ success: false });
+  }
+}
