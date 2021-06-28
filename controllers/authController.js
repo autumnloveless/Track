@@ -5,12 +5,12 @@ jwt = require("jsonwebtoken")
 exports.refreshToken = async (req, res) => {
     const refreshToken = req.body.token;
     if(refreshToken == null) { return res.sendStatus(401) }
-    authRecord = await authDB.getAuthByRefreshToken(refreshToken);
-    if(!authRecord.success) { return res.sendStatus(403) }
+    authResult = await authDB.getAuthByRefreshToken(refreshToken);
+    if(!authResult.success) { return res.sendStatus(403) }
     
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, user) => {
         if(err) { return res.sendStatus(403) }
-        const result = await authDB.regenerateToken(authRecord.id, { 
+        const result = await authDB.regenerateToken(authResult.auth.id, { 
             "id": user.id, 
             "permissionLevel": user.permissionLevel 
         });

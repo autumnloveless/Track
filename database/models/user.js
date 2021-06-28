@@ -16,7 +16,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     permissionLevel: DataTypes.INTEGER,
     password: DataTypes.STRING
-  }, {});
+  }, {
+    scopes: {
+      withoutPassword: {
+        attributes: { exclude: ['password'] },
+      }
+    }
+  });
   User.associate = function(models) {
     // associations can be defined here
     User.hasMany(models.Auth, {

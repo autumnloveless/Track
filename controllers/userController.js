@@ -1,7 +1,7 @@
 const usersDB = require('../database/controllers/users');
   
 exports.getUserById = async (req, res) => {
-  result = await usersDB.getUserById(req.params.userId)
+  result = await usersDB.getUserById(req.params.userId, true)
   res.status(result.success ? 200 : 400).json(result)
 }
 
@@ -16,6 +16,7 @@ exports.deleteUser = async (req, res) => {
 }
 
 exports.updateUser = async (req, res) => {
-  user = await usersDB.updateUser(req.params.userId, req.body)
+  result = await usersDB.updateUser(req.params.userId, req.body)
+  if(result.user) { delete result.user.dataValues.password }
   res.status(result.success ? 200 : 400).json(result)
 }
