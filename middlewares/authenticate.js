@@ -14,16 +14,16 @@ exports.authenticateToken = async (req, res, next) => {
 }
 
 exports.loginMatch = async (req, res, next) => {
-  user = await usersDB.getUserByEmail(req.body.email);
-  if (!user.success) { return res.status(400).json({ "success": false, "error": "Invalid email or password"}); }
-  if (await bcrypt.compare(password, user.password)){
+  result = await usersDB.getUserByEmail(req.body.email);
+  if (!result.success) { return res.status(400).json({ "success": false, "error": "Invalid email or password"}); }
+  if (await bcrypt.compare(password, result.user.password)){
     req.user = {
-      id: user.id,
-      email: user.email,
-      permissionLevel: user.permissionLevel,
+      id: result.user.id,
+      email: result.user.email,
+      permissionLevel: result.user.permissionLevel,
       provider: 'email',
-      firstName: user.firstName,
-      lastName: user.lastName
+      firstName: result.user.firstName,
+      lastName: result.user.lastName
     };
     return next();
   } else {
