@@ -1,5 +1,5 @@
 const usersDB = require('../database/controllers/users');
-  
+
 exports.getUserById = async (req, res) => {
   if(req.user.id != req.params.userId) { return res.status(403).json({ error: 'unauthorized' }) }
   result = await usersDB.getUserById(req.params.userId, true)

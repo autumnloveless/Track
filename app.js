@@ -2,7 +2,7 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
-const api = require('./route');
+const api = require('./routes');
 const server = express();
 
 server.use(express.json());
