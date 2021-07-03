@@ -1,6 +1,6 @@
 const plaid = require('plaid');
-const Item = require("../database/controllers/plaidItem")
-
+const Item = require("../database/controllers/plaidItem");
+const Account = require("../database/controllers/plaidAccount");
 
 const client = new plaid.Client({
   clientID: process.env.PLAID_CLIENT_ID,
@@ -8,7 +8,6 @@ const client = new plaid.Client({
   env: plaid.environments.sandbox,
   options: { version: '2020-09-14' }
 });
-
 const PLAID_PRODUCTS = (process.env.PLAID_PRODUCTS || 'transactions').split(',');
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(',');
 const PLAID_REDIRECT_URI = process.env.PLAID_REDIRECT_URI || '';
@@ -50,9 +49,36 @@ exports.setAccessToken = async (request, response, next) => {
 
 // Retrieve an Item's accounts
 // https://plaid.com/docs/#accounts
-exports.getAccounts = (request, response, next) => {
+exports.generateAccounts = async (request, response, next) => {
+  const accessToken = await Item.find(request.body.item_id).accessToken;
+
   client.getAccounts(accessToken, (error, accountsResponse) => {
     if (error) { return response.json({ success: false, error: error }); }
-    response.json({ success: true, accounts: accountsResponse });
+    const account = accountsResponse.account;
+
+    results = [];
+    for(account of accountsResponse.accounts){
+      result = await Account.upsert({
+        userId: request.user.id,
+        accountId: account.account_id,
+        itemId: request.body.item_id,
+        balanceAvailable: account.balances.available,
+        balanceCurrent: account.balances.current,
+        balanceLimit: account.balances.limit,
+        isoCurrencyCode: account.balances.iso_currency_code,
+        unofficialCurrencyCode: account.balances.unofficial_currency_code,
+        lastUpdatedDateTime: account.balances.last_updated_datetime,
+        mask: account.mask,
+        name: account.name,
+        officialName: account.official_name,
+        type: account.type,
+        subtype: account.subtype,
+        verificationStatus: account.verification_status,
+      });
+      results.push(result);
+    }
+    
+    response.json({ success: true, results: results, accounts: accountsResponse });
   });
 }
+

@@ -24,7 +24,7 @@ exports.getUsers = async (query = null) => {
     ? await models.User.scope('withoutPassword').findAll({ where: query })
     : await models.User.scope('withoutPassword').findAll();
   if (users) {
-    return { success: true, users: Array.from(users) };
+    return { success: true, users: users };
   } else {
     return { success: false, error: "Users Not Found" };
   }

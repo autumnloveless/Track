@@ -1,25 +1,25 @@
 const models = require("../models");
 
 exports.create = async (item) => {
-  const newitem = await models.item.create({
-    userId: item.firstName,
-    accessToken: item.lastName,
+  const newitem = await models.plaidItem.create({
+    userId: item.userId,
+    accessToken: item.accessToken,
     itemId: item.itemId,
   });
   return { success: true, item: newitem };
 };
 
 exports.find = async (id) => {
-  const item = await models.item.findOne({ where: { id: id } });
+  const item = await models.plaidItem.findOne({ where: { id: id } });
   return item ? { success: true, item: item } : { success: false, error: "item Not Found" };
 };
 
 exports.get = async (query = null) => {
   const items = query
-    ? await models.item.findAll({ where: query })
-    : await models.item.findAll();
+    ? await models.plaidItem.findAll({ where: query })
+    : await models.plaidItem.findAll();
   if (items) {
-    return { success: true, items: Array.from(items) };
+    return { success: true, items: items };
   } else {
     return { success: false, error: "items Not Found" };
   }

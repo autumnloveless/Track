@@ -25,7 +25,10 @@ api.post('/registerAdmin', auth.authenticateToken, auth.minRole(2), authControll
 api.post('/plaid/get_link_token', auth.authenticateToken, plaidController.getLinkToken, util.handleErrors);
 // Exchange token flow - exchange a Link public_token for an API access_token
 api.post('/plaid/set_access_token', auth.authenticateToken, plaidController.setAccessToken, util.handleErrors);
-api.get('/plaid/accounts', auth.authenticateToken, plaidController.getAccounts, util.handleErrors);
+api.get('/plaid/generateAccounts', auth.authenticateToken, plaidController.generateAccounts, util.handleErrors);
+
+api.get('/accounts', auth.authenticateToken, accountController.list, util.handleErrors);
+
 
 
 

@@ -1,25 +1,25 @@
-const usersDB = require('../database/controllers/users');
+const Account = require('../database/controllers/plaidAccount');
 
-exports.getUserById = async (req, res) => {
+exports.find = async (req, res) => {
   if(req.user.id != req.params.userId) { return res.status(403).json({ error: 'unauthorized' }) }
-  result = await usersDB.getUserById(req.params.userId, true)
+  result = await Account.find(req.params.userId, true)
   res.status(result.success ? 200 : 400).json(result)
 }
 
-exports.getUsers = async (req, res) => {
-  result = await usersDB.getUsers()
+exports.list = async (req, res) => {
+  result = await Account.list()
   res.status(result.success ? 200 : 400).json(result)
 }
 
-exports.deleteUser = async (req, res) => {
+exports.delete = async (req, res) => {
   if(req.user.id != req.params.userId) { return res.status(403).json({ error: 'unauthorized' }) }
-  result = await usersDB.deleteUser(req.params.userId)
+  result = await Account.delete(req.params.userId)
   res.status(result.success ? 200 : 400).json(result)
 }
 
-exports.updateUser = async (req, res) => {
+exports.update = async (req, res) => {
   if(req.user.id != req.params.userId) { return res.status(403).json({ error: 'unauthorized' }) }
-  result = await usersDB.updateUser(req.params.userId, req.body)
+  result = await Account.update(req.params.userId, req.body)
   if(result.user) { delete result.user.dataValues.password }
   res.status(result.success ? 200 : 400).json(result)
 }
