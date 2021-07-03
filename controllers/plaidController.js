@@ -1,17 +1,23 @@
-const plaid = require('plaid');
+const plaid = require("plaid");
 const Item = require("../database/controllers/plaidItem");
 const Account = require("../database/controllers/plaidAccount");
-const moment = require('moment');
+const Transaction = require("../database/controllers/plaidTransaction");
+const { Op } = require("sequelize");
+const moment = require("moment");
 
 const client = new plaid.Client({
   clientID: process.env.PLAID_CLIENT_ID,
   secret: process.env.PLAID_SECRET,
   env: plaid.environments.sandbox,
-  options: { version: '2020-09-14' }
+  options: { version: "2020-09-14" },
 });
-const PLAID_PRODUCTS = (process.env.PLAID_PRODUCTS || 'transactions').split(',');
-const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(',');
-const PLAID_REDIRECT_URI = process.env.PLAID_REDIRECT_URI || '';
+const PLAID_PRODUCTS = (process.env.PLAID_PRODUCTS || "transactions").split(
+  ","
+);
+const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || "US").split(
+  ","
+);
+const PLAID_REDIRECT_URI = process.env.PLAID_REDIRECT_URI || "";
 
 // Create a link token with configs which we can then use to initialize Plaid Link client-side.
 // See https://plaid.com/docs/#create-link-token
@@ -24,19 +30,23 @@ exports.getLinkToken = async (request, response) => {
     language: "en",
   };
 
-  if (PLAID_REDIRECT_URI !== "") { configs.redirect_uri = PLAID_REDIRECT_URI; }
+  if (PLAID_REDIRECT_URI !== "") {
+    configs.redirect_uri = PLAID_REDIRECT_URI;
+  }
   const createTokenResponse = await client.linkTokenCreate(configs);
   response.json(createTokenResponse.data);
-}
+};
 
 // Exchange token flow - exchange a Link public_token for an API access_token
 // https://plaid.com/docs/#exchange-token-flow
 exports.setAccessToken = async (request, response, next) => {
-  const tokenResponse = await client.itemPublicTokenExchange({ public_token: request.body.public_token });
-  result = await Item.create({ 
+  const tokenResponse = await client.itemPublicTokenExchange({
+    public_token: request.body.public_token,
+  });
+  result = await Item.create({
     userId: request.user.id,
     accessToken: tokenResponse.data.access_token,
-    itemId: tokenResponse.data.item_id
+    itemId: tokenResponse.data.item_id,
   });
 
   return response.json({
@@ -45,74 +55,180 @@ exports.setAccessToken = async (request, response, next) => {
     item_id: result.item.itemId,
     error: result.error,
   });
-}
+};
 
-// https://plaid.com/docs/#accounts
-exports.refreshAccounts = async (request, response, next) => {
-  const accessToken = await Item.find(request.body.item_id).accessToken;
+const fetchTransactions = async (plaidItemId, startDate, endDate) => {
+  // the transactions endpoint is paginated, so we may need to hit it multiple times to
+  // retrieve all available transactions.
+  try {
+    // get the access token based on the plaid item id
+    const { item } = await Item.findByItemId(plaidItemId);
+    const accessToken = item.accessToken;
 
-  client.getAccounts(accessToken, (error, accountsResponse) => {
-    if (error) { return response.json({ success: false, error: error }); }
-    const account = accountsResponse.account;
-
-    results = [];
-    for(account of accountsResponse.accounts){
-      result = await Account.upsert({
-        userId: request.user.id,
-        accountId: account.account_id,
-        itemId: request.body.item_id,
-        balanceAvailable: account.balances.available,
-        balanceCurrent: account.balances.current,
-        balanceLimit: account.balances.limit,
-        isoCurrencyCode: account.balances.iso_currency_code,
-        unofficialCurrencyCode: account.balances.unofficial_currency_code,
-        lastUpdatedDateTime: account.balances.last_updated_datetime,
-        mask: account.mask,
-        name: account.name,
-        officialName: account.official_name,
-        type: account.type,
-        subtype: account.subtype,
-        verificationStatus: account.verification_status,
+    const response = await client
+      .getTransactions(accessToken, startDate, endDate, {})
+      .catch((err) => {
+        // handle error
       });
-      results.push(result);
+    let transactions = response.transactions;
+    let accounts = response.accounts;
+    const total_transactions = response.total_transactions;
+    // Manipulate the offset parameter to paginate
+    // transactions and retrieve all available data
+    while (transactions.length < total_transactions) {
+      const paginatedTransactionsResponse = await client.getTransactions(
+        accessToken,
+        startDate,
+        endDate,
+        { offset: transactions.length }
+      );
+      transactions = transactions.concat(
+        paginatedTransactionsResponse.transactions
+      );
     }
-    
-    response.json({ success: true, results: results, accounts: accountsResponse });
+    return { transactions: transactions, accounts: accounts };
+  } catch (err) {
+    console.error(`Error fetching transactions: ${err.message}`);
+    return { transactions: [], accounts: [] };
+  }
+};
+
+const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate, read = false) => {
+  // Fetch new transactions from plaid api.
+  const { transactions: incomingTransactions, accounts } =
+    await fetchTransactions(plaidItemId, startDate, endDate);
+
+  // Retrieve existing transactions from our db.
+  const { transactions: existingTransactions } = await Transaction.list({
+    [Op.and]: {
+      date: {
+        [Op.between]: [startDate, endDate]
+      },
+      itemId: plaidItemId,
+    },
   });
-}
 
-// https://plaid.com/docs/#accounts
-exports.updateTransactions = async (request, response, next) => {
-  const item = await Item.find(request.body.item_id);
-  const fromDate = item.statusTransactionsLastSuccessfulUpdate || "" // moment.js 30 days ago;
-  const toDate = ;
-
-  client.getTransactions(item.accessToken, item.statusTransactionsLastSuccessfulUpdate, (error, accountsResponse) => {
-    if (error) { return response.json({ success: false, error: error }); }
-    const account = accountsResponse.account;
-
-    results = [];
-    for(account of accountsResponse.accounts){
-      result = await Account.upsert({
-        userId: request.user.id,
-        accountId: account.account_id,
-        itemId: request.body.item_id,
-        balanceAvailable: account.balances.available,
-        balanceCurrent: account.balances.current,
-        balanceLimit: account.balances.limit,
-        isoCurrencyCode: account.balances.iso_currency_code,
-        unofficialCurrencyCode: account.balances.unofficial_currency_code,
-        lastUpdatedDateTime: account.balances.last_updated_datetime,
-        mask: account.mask,
-        name: account.name,
-        officialName: account.official_name,
-        type: account.type,
-        subtype: account.subtype,
-        verificationStatus: account.verification_status,
-      });
-      results.push(result);
+  // Compare to find new transactions.
+  const existingTransactionIds = existingTransactions.reduce(
+    (idMap, { plaid_transaction_id: transactionId }) => ({
+      ...idMap,
+      [transactionId]: transactionId,
+    }),
+    {}
+  );
+  const transactionsToStore = incomingTransactions.filter(
+    ({ transaction_id: transactionId }) => {
+      const isExisting = existingTransactionIds[transactionId];
+      return !isExisting;
     }
-    
-    response.json({ success: true, results: results, accounts: accountsResponse });
-  });
+  );
+
+  // Compare to find removed transactions (pending transactions that have posted or cancelled).
+  const incomingTransactionIds = incomingTransactions.reduce(
+    (idMap, { transaction_id: transactionId }) => ({
+      ...idMap,
+      [transactionId]: transactionId,
+    }),
+    {}
+  );
+  const transactionsToRemove = existingTransactions.filter(
+    ({ plaid_transaction_id: transactionId }) => {
+      const isIncoming = incomingTransactionIds[transactionId];
+      return !isIncoming;
+    }
+  ).select((transaction) => transaction.transaction_id);
+
+  transactionsToStore = transactions.map((transaction) => ({
+    userId: userId,
+    transactionId: transaction.transaction_id,
+    itemId: plaidItemId,
+    accountId: transaction.account_id,
+    amount: transaction.amount,
+    read: read,
+    isoCurrencyCode: transaction.iso_currency_code,
+    unofficialCurrencyCode: transaction.unofficial_currency_code,
+    category: transaction.category,
+    categoryId: transaction.category_id,
+    date: transaction.date,
+    authorizedDate: transaction.authorized_date,
+    locationId: transaction.location_id,
+    name: transaction.name,
+    merchantName: transaction.merchant_name,
+    paymentChannel: transaction.payment_channel,
+    pending: transaction.pending,
+    pendingTransactionId: transaction.pending_transaction_id,
+    accountOwner: transaction.account_owner,
+    transactionCode: transaction.transaction_code,
+    transactionType: transaction.transaction_type,
+  }));
+  accounts = accounts.map(account => ({
+    userId: userId,
+    accountId: account.account_id,
+    itemId: plaidItemId,
+    balanceAvailable: account.balances.available,
+    balanceCurrent: account.balances.current,
+    balanceLimit: account.balances.limit,
+    isoCurrencyCode: account.balances.iso_currency_code,
+    unofficialCurrencyCode: account.balances.unofficial_currency_code,
+    lastUpdatedDateTime: account.balances.last_updated_datetime,
+    mask: account.mask,
+    name: account.name,
+    officialName: account.official_name,
+    type: account.type,
+    subtype: account.subtype,
+    verificationStatus: account.verification_status,
+  }))
+
+  await Account.bulkCreate(accounts);
+  await Transaction.bulkCreate(transactionsToStore);
+  await Transaction.bulkDelete(transactionsToRemove);
+};
+
+exports.handleTransactionsWebhook = async (req, res) => {
+  const {
+    webhook_code: webhookCode,
+    item_id: plaidItemId,
+    new_transactions: newTransactions,
+    removed_transactions: removedTransactions,
+  } = req.body;
+
+  switch (webhookCode) {
+    case "INITIAL_UPDATE": {
+      // Fired when an Item's initial transaction pull is completed.
+      // Note: The default pull is 30 days.
+      const startDate = moment().subtract(30, "days").format("YYYY-MM-DD");
+      const endDate = moment().format("YYYY-MM-DD");
+      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate, true);
+      break;
+    }
+    case "HISTORICAL_UPDATE": {
+      // Fired when an Item's historical transaction pull is completed. Plaid fetches as much
+      // data as is available from the financial institution.
+      const startDate = moment().subtract(6, "months").format("YYYY-MM-DD");
+      const endDate = moment().format("YYYY-MM-DD");
+      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate, true);
+      break;
+    }
+    case "DEFAULT_UPDATE": {
+      // Fired when new transaction data is available as Plaid performs its regular updates of
+      // the Item. Since transactions may take several days to post, we'll fetch 14 days worth of
+      // transactions from Plaid and reconcile them with the transactions we already have stored.
+      const startDate = moment().subtract(14, "days").format("YYYY-MM-DD");
+      const endDate = moment().format("YYYY-MM-DD");
+      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate);
+      break;
+    }
+    case "TRANSACTIONS_REMOVED": {
+      await Transaction.bulkDelete(removedTransactions);
+      break;
+    }
+    default:
+      console.log("unhandled webhook type received.");
+  }
+};
+
+exports.updateTransactions = async (req, res) => {
+  const startDate = moment().subtract(30, "days").format("YYYY-MM-DD");
+  const endDate = moment().format("YYYY-MM-DD");
+  handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate)
 }

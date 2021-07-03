@@ -3,8 +3,10 @@ module.exports = (sequelize, DataTypes) => {
   const PlaidTransaction = sequelize.define('PlaidTransaction', {
     userId: DataTypes.STRING,
     transactionId: DataTypes.STRING,
+    itemId: DataTypes.STRING,
     accountId: DataTypes.STRING,
     amount: DataTypes.NUMBER,
+    read: DataTypes.BOOLEAN,
     isoCurrencyCode: DataTypes.STRING,
     unofficialCurrencyCode: DataTypes.STRING,
     category: DataTypes.STRING,
@@ -14,7 +16,6 @@ module.exports = (sequelize, DataTypes) => {
     locationId: DataTypes.STRING,
     name: DataTypes.STRING,
     merchantName: DataTypes.STRING,
-    paymentMetaId: DataTypes.STRING,
     paymentChannel: DataTypes.STRING,
     pending: DataTypes.BOOLEAN,
     pendingTransactionId: DataTypes.STRING,

@@ -14,6 +14,11 @@ exports.find = async (id) => {
   return item ? { success: true, item: item } : { success: false, error: "item Not Found" };
 };
 
+exports.findByItemId = async (id) => {
+  const item = await models.plaidItem.findOne({ where: { itemId: id } });
+  return item ? { success: true, item: item } : { success: false, error: "item Not Found" };
+};
+
 exports.get = async (query = null) => {
   const items = query
     ? await models.plaidItem.findAll({ where: query })

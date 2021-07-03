@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const usersDB = require('../database/controllers/users');
+const Item = require('../database/controllers/plaidItem')
+const plaid = require('plaid');
+
 
 exports.authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -12,6 +15,28 @@ exports.authenticateToken = async (req, res, next) => {
       req.user = user;
       next();
   })
+}
+
+exports.verifyPlaidWebhook = async (req, res, next) => {
+  const verificationHeader = req.headers['Plaid-Verification'];
+  decodedJWT = jwt.decode(verificationHeader);
+  if (decodedJWT.alg != "ES256" ) { return res.sendStatus(403) }
+  const keyId = decodedJWT.kid;
+  const client = new plaid.Client({
+    clientID: process.env.PLAID_CLIENT_ID,
+    secret: process.env.PLAID_SECRET,
+    env: plaid.environments.sandbox,
+    options: { version: '2020-09-14' }
+  });
+  const response = await client.getWebhookVerificationKey(keyId).catch((err) => { return res.sendStatus(401)});
+  const key = response.key;
+
+  jwt.verify(verificationHeader, key, (err) => {
+    if (err) { return res.sendStatus(403) }
+    const { item } = await Item.findByItemId(req.body.item_id)
+    req.user = { id: item.userId }
+    next();
+  });
 }
 
 exports.loginMatch = async (req, res, next) => {

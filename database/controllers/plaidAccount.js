@@ -1,24 +1,13 @@
 const models = require("../models");
 
 exports.create = async (account) => {
-  const newAccount = await models.plaidAccount.create({
-    userId: account.userId,
-    accountId: account.accountId,
-    itemId: account.itemId,
-    balanceAvailable: account.balanceAvailable,
-    balanceCurrent: account.balanceCurrent,
-    balanceLimit: account.balanceLimit,
-    isoCurrencyCode: account.isoCurrencyCode,
-    unofficialCurrencyCode: account.unofficialCurrencyCode,
-    lastUpdatedDateTime: account.lastUpdatedDateTime,
-    mask: account.mask,
-    name: account.name,
-    officialName: account.officialName,
-    typeId: account.typeId,
-    subtype: account.subtype,
-    verificationStatusId: account.verificationStatusId,
-  });
+  const newAccount = await models.plaidAccount.create(account);
   return { success: true, account: newAccount };
+};
+
+exports.bulkCreate = async (accounts) => {
+  await models.plaidAccount.bulkCreate(accounts);
+  return { success: true };
 };
 
 exports.upsert = async (account) => {

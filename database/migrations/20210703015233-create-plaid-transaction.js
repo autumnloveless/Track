@@ -15,7 +15,9 @@ module.exports = {
         type: Sequelize.STRING
       },
       userId: Sequelize.STRING,
+      read: Sequelize.BOOLEAN,
       transactionId: Sequelize.STRING,
+      itemId: Sequelize.STRING,
       accountId: Sequelize.STRING,
       amount: Sequelize.NUMBER,
       isoCurrencyCode: Sequelize.STRING,
@@ -27,7 +29,6 @@ module.exports = {
       locationId: Sequelize.STRING,
       name: Sequelize.STRING,
       merchantName: Sequelize.STRING,
-      paymentMetaId: Sequelize.STRING,
       paymentChannel: Sequelize.STRING,
       pending: Sequelize.BOOLEAN,
       pendingTransactionId: Sequelize.STRING,
