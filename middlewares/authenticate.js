@@ -39,3 +39,7 @@ exports.minRole = (requiredPermissionLevel) => async (req, res, next) => {
     return res.status(403).json({ success: false });
   }
 }
+
+exports.isAllowed = (user, targetId) => {
+  return (user?.permissionLevel > 2 || user?.id == targetId)
+}

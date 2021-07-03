@@ -1,6 +1,6 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-  const PlaidUser = sequelize.define('PlaidItem', {
+  const PlaidItem = sequelize.define('PlaidItem', {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -8,10 +8,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     userId: DataTypes.STRING,
     accessToken: DataTypes.STRING,
-    itemId: DataTypes.STRING
+    itemId: DataTypes.STRING,
+    statusTransactionsLastSuccessfulUpdate: DataTypes.DATE,
+    statusTransactionsLastFailedUpdate: DataTypes.DATE,
+    statusInvestmentsLastSuccessfulUpdate: DataTypes.DATE,
+    statusInvestmentsLastFailedUpdate: DataTypes.DATE
   }, {});
-  PlaidUser.associate = function(models) {
+  PlaidItem.associate = function(models) {
     // associations can be defined here
   };
-  return PlaidUser;
+  return PlaidItem;
 };

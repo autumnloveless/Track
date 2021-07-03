@@ -1,6 +1,7 @@
 const plaid = require('plaid');
 const Item = require("../database/controllers/plaidItem");
 const Account = require("../database/controllers/plaidAccount");
+const moment = require('moment');
 
 const client = new plaid.Client({
   clientID: process.env.PLAID_CLIENT_ID,
@@ -31,8 +32,7 @@ exports.getLinkToken = async (request, response) => {
 // Exchange token flow - exchange a Link public_token for an API access_token
 // https://plaid.com/docs/#exchange-token-flow
 exports.setAccessToken = async (request, response, next) => {
-  PUBLIC_TOKEN = request.body.public_token;
-  const tokenResponse = await client.itemPublicTokenExchange({ public_token: PUBLIC_TOKEN });
+  const tokenResponse = await client.itemPublicTokenExchange({ public_token: request.body.public_token });
   result = await Item.create({ 
     userId: request.user.id,
     accessToken: tokenResponse.data.access_token,
@@ -47,9 +47,8 @@ exports.setAccessToken = async (request, response, next) => {
   });
 }
 
-// Retrieve an Item's accounts
 // https://plaid.com/docs/#accounts
-exports.generateAccounts = async (request, response, next) => {
+exports.refreshAccounts = async (request, response, next) => {
   const accessToken = await Item.find(request.body.item_id).accessToken;
 
   client.getAccounts(accessToken, (error, accountsResponse) => {
@@ -82,3 +81,38 @@ exports.generateAccounts = async (request, response, next) => {
   });
 }
 
+// https://plaid.com/docs/#accounts
+exports.updateTransactions = async (request, response, next) => {
+  const item = await Item.find(request.body.item_id);
+  const fromDate = item.statusTransactionsLastSuccessfulUpdate || "" // moment.js 30 days ago;
+  const toDate = ;
+
+  client.getTransactions(item.accessToken, item.statusTransactionsLastSuccessfulUpdate, (error, accountsResponse) => {
+    if (error) { return response.json({ success: false, error: error }); }
+    const account = accountsResponse.account;
+
+    results = [];
+    for(account of accountsResponse.accounts){
+      result = await Account.upsert({
+        userId: request.user.id,
+        accountId: account.account_id,
+        itemId: request.body.item_id,
+        balanceAvailable: account.balances.available,
+        balanceCurrent: account.balances.current,
+        balanceLimit: account.balances.limit,
+        isoCurrencyCode: account.balances.iso_currency_code,
+        unofficialCurrencyCode: account.balances.unofficial_currency_code,
+        lastUpdatedDateTime: account.balances.last_updated_datetime,
+        mask: account.mask,
+        name: account.name,
+        officialName: account.official_name,
+        type: account.type,
+        subtype: account.subtype,
+        verificationStatus: account.verification_status,
+      });
+      results.push(result);
+    }
+    
+    response.json({ success: true, results: results, accounts: accountsResponse });
+  });
+}

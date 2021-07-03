@@ -1,9 +1,8 @@
-const Account = require('../database/controllers/plaidAccount');
-const auth = require('./middlewares/authenticate');
+const Transaction = require('../database/controllers/plaidTransaction');
 
 exports.find = async (req, res) => {
+  if(req.user.id != req.params.userId) { return res.status(403).json({ error: 'unauthorized' }) }
   result = await Account.find(req.params.userId, true)
-  if(!auth.isAllowed(req.user, result?.account?.userId)) { return res.status(403).json({ error: 'unauthorized' }) }
   res.status(result.success ? 200 : 400).json(result)
 }
 

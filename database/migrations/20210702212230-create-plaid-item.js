@@ -17,6 +17,10 @@ module.exports = {
       itemId: {
         type: Sequelize.STRING
       },
+      statusTransactionsLastSuccessfulUpdate: Sequelize.DATE,
+      statusTransactionsLastFailedUpdate: Sequelize.DATE,
+      statusInvestmentsLastSuccessfulUpdate: Sequelize.DATE,
+      statusInvestmentsLastFailedUpdate: Sequelize.DATE,
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
