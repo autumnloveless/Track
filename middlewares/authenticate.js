@@ -31,7 +31,7 @@ exports.verifyPlaidWebhook = async (req, res, next) => {
   const response = await client.getWebhookVerificationKey(keyId).catch((err) => { return res.sendStatus(401)});
   const key = response.key;
 
-  jwt.verify(verificationHeader, key, (err) => {
+  jwt.verify(verificationHeader, key, async (err) => {
     if (err) { return res.sendStatus(403) }
     const { item } = await Item.findByItemId(req.body.item_id)
     req.user = { id: item.userId }

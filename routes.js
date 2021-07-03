@@ -3,6 +3,7 @@ const userController = require('./controllers/userController');
 const authController = require('./controllers/authController');
 const plaidController = require('./controllers/plaidController');
 const accountController = require('./controllers/accountController');
+const transactionController = require('./controllers/transactionController');
 const util = require('./controllers/utilityController');
 const auth = require('./middlewares/authenticate');
 const api = express.Router();
@@ -27,7 +28,6 @@ api.post('/registerAdmin', auth.authenticateToken, auth.minRole(2), authControll
 // ========================== PLAID SETUP ==========================
 api.post('/plaid/get_link_token', auth.authenticateToken, plaidController.getLinkToken, util.handleErrors);
 api.post('/plaid/set_access_token', auth.authenticateToken, plaidController.setAccessToken, util.handleErrors);
-api.get('/plaid/updateAccounts', auth.authenticateToken, plaidController.updateAccounts, util.handleErrors);
 api.get('/plaid/updateTransactions', auth.authenticateToken, plaidController.updateTransactions, util.handleErrors);
 
 // ========================== PLAID WEBHOOKS ==========================
@@ -35,7 +35,6 @@ api.post('/plaid/initialUpdate', auth.verifyPlaidWebhook, plaidController.handle
 api.post('/plaid/historicalUpdate', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
 api.post('/plaid/defaultUpdate', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
 api.post('/plaid/transactionsRemoved', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
-
 
 // ========================== PLAID ACCOUNT ==========================
 api.get('/accounts', auth.authenticateToken, accountController.list, util.handleErrors);
@@ -48,8 +47,5 @@ api.get('/accounts/:accountId/transactions', auth.authenticateToken, transaction
 api.get('/accounts/:accountId/transactions/:transactionId', auth.authenticateToken, transactionController.find, util.handleErrors);
 api.put('/accounts/:accountId/transactions/:transactionId', auth.authenticateToken, transactionController.list, util.handleErrors);
 api.delete('/accounts/:accountId/transactions/:transactionId', auth.authenticateToken, transactionController.list, util.handleErrors);
-
-
-
 
 module.exports = api;

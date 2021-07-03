@@ -1,5 +1,5 @@
 const Account = require('../database/controllers/plaidAccount');
-const auth = require('./middlewares/authenticate');
+const auth = require('../middlewares/authenticate');
 
 exports.find = async (req, res) => {
   result = await Account.find(req.params.userId, true)
