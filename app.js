@@ -7,7 +7,7 @@ const server = express();
 
 server.use(express.json());
 server.use(helmet());
-server.use(cors());
+server.use(cors({ origin: 'http://localhost:5000', credentials :  true}));
 server.use(morgan('combined'));
 server.use(express.urlencoded({ extended: false }));
 
