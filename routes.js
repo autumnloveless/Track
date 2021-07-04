@@ -26,15 +26,15 @@ api.post('/register', authController.register, util.handleErrors);
 api.post('/registerAdmin', auth.authenticateToken, auth.minRole(2), authController.registerAdmin, util.handleErrors);
 
 // ========================== PLAID SETUP ==========================
-api.post('/plaid/get_link_token', auth.authenticateToken, plaidController.getLinkToken, util.handleErrors);
+api.get('/plaid/get_link_token', auth.authenticateToken, plaidController.getLinkToken, util.handleErrors);
 api.post('/plaid/set_access_token', auth.authenticateToken, plaidController.setAccessToken, util.handleErrors);
-api.get('/plaid/updateTransactions', auth.authenticateToken, plaidController.updateTransactions, util.handleErrors);
+api.get('/plaid/update_transactions', auth.authenticateToken, plaidController.updateTransactions, util.handleErrors);
 
 // ========================== PLAID WEBHOOKS ==========================
-api.post('/plaid/initialUpdate', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
-api.post('/plaid/historicalUpdate', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
-api.post('/plaid/defaultUpdate', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
-api.post('/plaid/transactionsRemoved', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
+api.post('/plaid/initial_update', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
+api.post('/plaid/historical_update', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
+api.post('/plaid/default_update', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
+api.post('/plaid/transactions_removed', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
 
 // ========================== PLAID ACCOUNT ==========================
 api.get('/accounts', auth.authenticateToken, accountController.list, util.handleErrors);

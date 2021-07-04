@@ -33,8 +33,8 @@ exports.getLinkToken = async (request, response) => {
   if (PLAID_REDIRECT_URI !== "") {
     configs.redirect_uri = PLAID_REDIRECT_URI;
   }
-  const createTokenResponse = await client.linkTokenCreate(configs);
-  response.json(createTokenResponse.data);
+  const createTokenResponse = await client.createLinkToken(configs);
+  return response.status(200).json(createTokenResponse);
 };
 
 // Exchange token flow - exchange a Link public_token for an API access_token
@@ -230,5 +230,6 @@ exports.handleTransactionsWebhook = async (req, res) => {
 exports.updateTransactions = async (req, res) => {
   const startDate = moment().subtract(30, "days").format("YYYY-MM-DD");
   const endDate = moment().format("YYYY-MM-DD");
+  const plaidItemId = req.body.item_id;
   handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate)
 }
