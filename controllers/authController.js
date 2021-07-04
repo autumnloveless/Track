@@ -1,9 +1,10 @@
 const authDB = require("../database/controllers/auth");
 const usersDB = require("../database/controllers/users");
+const moment = require("moment");
 jwt = require("jsonwebtoken")
 
 exports.refreshToken = async (req, res) => {
-    const refreshToken = req.body.token;
+    const refreshToken = req.cookies.refresh_token;
     if(refreshToken == null) { return res.sendStatus(401) }
     authResult = await authDB.getAuthByRefreshToken(refreshToken);
     if(!authResult.success) { return res.sendStatus(403) }
@@ -25,7 +26,8 @@ exports.login = async (req, res) => {
         "permissionLevel": req.user.permissionLevel
     }
     const result = await authDB.generateToken(user)
-    res.status(result.success ? 200 : 400).json(result)
+    res.cookie('refresh_token', result.refreshToken, { secure: true, httpOnly: true, path: "/api/token", expires: moment().add(7,'days').toDate() });
+    res.status(result.success ? 200 : 400).json({ success: result.success, accessToken: result.accessToken })
 }
 
 exports.logout = async (req, res) => {

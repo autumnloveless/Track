@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const userController = require('./controllers/userController');
 const authController = require('./controllers/authController');
 const plaidController = require('./controllers/plaidController');
@@ -8,6 +9,7 @@ const util = require('./controllers/utilityController');
 const auth = require('./middlewares/authenticate');
 const api = express.Router();
 
+api.use(cookieParser());
 api.get('/', async (req, res) => {
   const docsUrl = "https://github.com/autumnloveless/Track"
   res.json(`Welcome to the Track API. You can find documentation for accessing it here: ${docsUrl} `)
@@ -21,7 +23,7 @@ api.delete('/users/:userId', auth.authenticateToken, userController.deleteUser, 
 
 // ========================== AUTH ==========================
 api.post('/login', auth.loginMatch, authController.login, util.handleErrors);
-api.post('/token', authController.refreshToken, util.handleErrors);
+api.get('/token', authController.refreshToken, util.handleErrors);
 api.post('/register', authController.register, util.handleErrors);
 api.post('/registerAdmin', auth.authenticateToken, auth.minRole(2), authController.registerAdmin, util.handleErrors);
 
