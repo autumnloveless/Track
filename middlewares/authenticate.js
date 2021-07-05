@@ -13,6 +13,7 @@ exports.authenticateToken = async (req, res, next) => {
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) { return res.sendStatus(403) }
       req.user = user;
+      req.token = token;
       next();
   })
 }
@@ -51,6 +52,9 @@ exports.loginMatch = async (req, res, next) => {
       firstName: result.user.firstName,
       lastName: result.user.lastName
     };
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    req.token = token;
     return next();
   } else {
     return res.status(400).json({ "success": false, "error": "Invalid email or password"});

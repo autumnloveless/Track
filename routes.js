@@ -23,6 +23,7 @@ api.delete('/users/:userId', auth.authenticateToken, userController.deleteUser, 
 
 // ========================== AUTH ==========================
 api.post('/login', auth.loginMatch, authController.login, util.handleErrors);
+api.get('/logout', auth.authenticateToken, authController.logout, util.handleErrors);
 api.get('/token', authController.refreshToken, util.handleErrors);
 api.post('/register', authController.register, util.handleErrors);
 api.post('/registerAdmin', auth.authenticateToken, auth.minRole(2), authController.registerAdmin, util.handleErrors);

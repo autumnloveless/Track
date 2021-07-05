@@ -33,8 +33,8 @@ exports.getAuthById = async (id) => {
   return auth ? { success: true, auth: auth } : { success: false, error: "Auth Record Not Found" };
 };
 
-exports.deleteAuth = async (refreshToken) => {
-  result = await exports.getAuthByRefreshToken(refreshToken);
+exports.deleteAuth = async (accessToken) => {
+  result = await exports.getAuthByAccessToken(accessToken);
   if (!result.success) { return result; }
   await result.auth.destroy({ force: true });
   return { success: true };
@@ -49,5 +49,10 @@ exports.updateAuth = async (id, newData) => {
 
 exports.getAuthByRefreshToken = async (refreshToken) => {
   const auth = await models.Auth.findOne({ where: { refreshToken: refreshToken } });
+  return auth ? { success: true, auth: auth } : { success: false, error: "Auth Record Not Found" };
+};
+
+exports.getAuthByAccessToken = async (accessToken) => {
+  const auth = await models.Auth.findOne({ where: { accessToken: accessToken } });
   return auth ? { success: true, auth: auth } : { success: false, error: "Auth Record Not Found" };
 };
