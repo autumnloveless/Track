@@ -40,13 +40,11 @@ exports.getLinkToken = async (request, response) => {
 // Exchange token flow - exchange a Link public_token for an API access_token
 // https://plaid.com/docs/#exchange-token-flow
 exports.setAccessToken = async (request, response, next) => {
-  const tokenResponse = await client.itemPublicTokenExchange({
-    public_token: request.body.public_token,
-  });
+  const tokenResponse = await client.exchangePublicToken(request.body.public_token);
   result = await Item.create({
     userId: request.user.id,
-    accessToken: tokenResponse.data.access_token,
-    itemId: tokenResponse.data.item_id,
+    accessToken: tokenResponse.access_token,
+    itemId: tokenResponse.item_id,
   });
 
   return response.json({
@@ -68,7 +66,7 @@ const fetchTransactions = async (plaidItemId, startDate, endDate) => {
     const response = await client
       .getTransactions(accessToken, startDate, endDate, {})
       .catch((err) => {
-        // handle error
+        console.log(err)
       });
     let transactions = response.transactions;
     let accounts = response.accounts;
@@ -95,7 +93,7 @@ const fetchTransactions = async (plaidItemId, startDate, endDate) => {
 
 const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate, read = false) => {
   // Fetch new transactions from plaid api.
-  const { transactions: incomingTransactions, accounts } =
+  let { transactions: incomingTransactions, accounts } =
     await fetchTransactions(plaidItemId, startDate, endDate);
 
   // Retrieve existing transactions from our db.
@@ -116,7 +114,7 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
     }),
     {}
   );
-  const transactionsToStore = incomingTransactions.filter(
+  let transactionsToStore = incomingTransactions.filter(
     ({ transaction_id: transactionId }) => {
       const isExisting = existingTransactionIds[transactionId];
       return !isExisting;
@@ -136,9 +134,9 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
       const isIncoming = incomingTransactionIds[transactionId];
       return !isIncoming;
     }
-  ).select((transaction) => transaction.transaction_id);
+  ).map((transaction) => transaction.transaction_id);
 
-  transactionsToStore = transactions.map((transaction) => ({
+  transactionsToStore = transactionsToStore.map((transaction) => ({
     userId: userId,
     transactionId: transaction.transaction_id,
     itemId: plaidItemId,
@@ -182,6 +180,7 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
   await Account.bulkCreate(accounts);
   await Transaction.bulkCreate(transactionsToStore);
   await Transaction.bulkDelete(transactionsToRemove);
+  return;
 };
 
 exports.handleTransactionsWebhook = async (req, res) => {
@@ -231,5 +230,6 @@ exports.updateTransactions = async (req, res) => {
   const startDate = moment().subtract(30, "days").format("YYYY-MM-DD");
   const endDate = moment().format("YYYY-MM-DD");
   const plaidItemId = req.body.item_id;
-  handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate)
+  await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate)
+  res.status(200).json({"success": true})
 }

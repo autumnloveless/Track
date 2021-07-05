@@ -7,7 +7,12 @@ exports.find = async (req, res) => {
 }
 
 exports.list = async (req, res) => {
-  result = await Account.list()
+result = await Account.list()
+  res.status(result.success ? 200 : 400).json(result)
+}
+
+exports.listAll = async (req, res) => {
+  result = await Account.listAll()
   res.status(result.success ? 200 : 400).json(result)
 }
 
