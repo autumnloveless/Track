@@ -1,7 +1,7 @@
 const models = require("../models");
 
 exports.create = async (item) => {
-  const newitem = await models.plaidItem.create({
+  const newitem = await models.PlaidItem.create({
     userId: item.userId,
     accessToken: item.accessToken,
     itemId: item.itemId,
@@ -10,19 +10,19 @@ exports.create = async (item) => {
 };
 
 exports.find = async (id) => {
-  const item = await models.plaidItem.findOne({ where: { id: id } });
+  const item = await models.PlaidItem.findOne({ where: { id: id } });
   return item ? { success: true, item: item } : { success: false, error: "item Not Found" };
 };
 
 exports.findByItemId = async (id) => {
-  const item = await models.plaidItem.findOne({ where: { itemId: id } });
+  const item = await models.PlaidItem.findOne({ where: { itemId: id } });
   return item ? { success: true, item: item } : { success: false, error: "item Not Found" };
 };
 
 exports.get = async (query = null) => {
   const items = query
-    ? await models.plaidItem.findAll({ where: query })
-    : await models.plaidItem.findAll();
+    ? await models.PlaidItem.findAll({ where: query })
+    : await models.PlaidItem.findAll();
   if (items) {
     return { success: true, items: items };
   } else {

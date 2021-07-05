@@ -17,9 +17,9 @@ api.get('/', async (req, res) => {
 
 // ========================== USERS ==========================
 api.get('/users', auth.authenticateToken, auth.minRole(2), userController.getUsers, util.handleErrors);
-api.get('/users/:userId', auth.authenticateToken, userController.getUserById, util.handleErrors);
-api.put('/users/:userId', auth.authenticateToken, userController.updateUser, util.handleErrors);
-api.delete('/users/:userId', auth.authenticateToken, userController.deleteUser, util.handleErrors);
+api.get('/user', auth.authenticateToken, userController.getUserById, util.handleErrors);
+api.put('/user', auth.authenticateToken, userController.updateUser, util.handleErrors);
+api.delete('/user', auth.authenticateToken, userController.deleteUser, util.handleErrors);
 
 // ========================== AUTH ==========================
 api.post('/login', auth.loginMatch, authController.login, util.handleErrors);

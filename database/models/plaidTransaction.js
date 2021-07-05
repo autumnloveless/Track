@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     transactionId: DataTypes.STRING,
     itemId: DataTypes.STRING,
     accountId: DataTypes.STRING,
-    amount: DataTypes.NUMBER,
+    amount: DataTypes.FLOAT,
     read: DataTypes.BOOLEAN,
     isoCurrencyCode: DataTypes.STRING,
     unofficialCurrencyCode: DataTypes.STRING,

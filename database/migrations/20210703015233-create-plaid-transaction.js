@@ -19,7 +19,7 @@ module.exports = {
       transactionId: Sequelize.STRING,
       itemId: Sequelize.STRING,
       accountId: Sequelize.STRING,
-      amount: Sequelize.NUMBER,
+      amount: Sequelize.FLOAT,
       isoCurrencyCode: Sequelize.STRING,
       unofficialCurrencyCode: Sequelize.STRING,
       category: Sequelize.STRING,

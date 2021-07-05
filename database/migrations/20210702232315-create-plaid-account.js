@@ -17,9 +17,9 @@ module.exports = {
       itemId: {
         type: Sequelize.STRING
       },
-      balanceAvailable: Sequelize.NUMBER,
-      balanceCurrent: Sequelize.NUMBER,
-      balanceLimit: Sequelize.NUMBER,
+      balanceAvailable: Sequelize.FLOAT,
+      balanceCurrent: Sequelize.FLOAT,
+      balanceLimit: Sequelize.FLOAT,
       isoCurrencyCode: Sequelize.STRING,
       unofficialCurrencyCode: Sequelize.STRING,
       lastUpdatedDateTime: Sequelize.DATE,

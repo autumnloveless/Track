@@ -1,12 +1,12 @@
 const models = require("../models");
 
 exports.create = async (account) => {
-  const newAccount = await models.plaidAccount.create(account);
+  const newAccount = await models.PlaidAccount.create(account);
   return { success: true, account: newAccount };
 };
 
 exports.bulkCreate = async (accounts) => {
-  await models.plaidAccount.bulkCreate(accounts);
+  await models.PlaidAccount.bulkCreate(accounts);
   return { success: true };
 };
 
@@ -25,14 +25,14 @@ exports.upsert = async (account) => {
 }
 
 exports.find = async (id) => {
-  const account = await models.plaidAccount.findOne({ where: { id: id } });
+  const account = await models.PlaidAccount.findOne({ where: { id: id } });
   return account ? { success: true, account: account } : { success: false, error: "account Not Found" };
 };
 
 exports.list = async (query = null) => {
   const accounts = query
-    ? await models.plaidAccount.findAll({ where: query })
-    : await models.plaidAccount.findAll();
+    ? await models.PlaidAccount.findAll({ where: query })
+    : await models.PlaidAccount.findAll();
   if (accounts) {
     return { success: true, accounts: accounts };
   } else {

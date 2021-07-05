@@ -2,12 +2,12 @@ const models = require("../models");
 const { Op } = require("sequelize");
 
 exports.create = async (transaction) => {
-  const newTransaction = await models.plaidTransaction.create(transaction);
+  const newTransaction = await models.PlaidTransaction.create(transaction);
   return { success: true, transaction: newTransaction };
 };
 
 exports.bulkCreate = async (transactions) => {
-  await models.plaidTransaction.bulkCreate(transactions);
+  await models.PlaidTransaction.bulkCreate(transactions);
   return { success: true };
 };
 
@@ -26,12 +26,12 @@ exports.upsert = async (transaction) => {
 }
 
 exports.find = async (id) => {
-  const transaction = await models.plaidTransaction.findOne({ where: { id: id } });
+  const transaction = await models.PlaidTransaction.findOne({ where: { id: id } });
   return transaction ? { success: true, transaction: transaction } : { success: false, error: "transaction Not Found" };
 };
 
 exports.mostRecent = async (itemId) => {
-  const transaction = await models.plaidTransaction.findOne({ 
+  const transaction = await models.PlaidTransaction.findOne({ 
     where: { itemId: itemId }, 
     order: [[ 'createdAt', 'DESC' ]] 
   });
@@ -40,8 +40,8 @@ exports.mostRecent = async (itemId) => {
 
 exports.list = async (query = null) => {
   const transactions = query
-    ? await models.plaidTransaction.findAll({ where: query })
-    : await models.plaidTransaction.findAll();
+    ? await models.PlaidTransaction.findAll({ where: query })
+    : await models.PlaidTransaction.findAll();
   if (transactions) {
     return { success: true, transactions: transactions };
   } else {
@@ -57,7 +57,7 @@ exports.delete = async (id) => {
 };
 
 exports.bulkDelete = async (ids) => {
-  await models.plaidTransaction.destroy({
+  await models.PlaidTransaction.destroy({
     where: { transactionId: {
       [Op.in]: ids 
     }
