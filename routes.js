@@ -46,10 +46,10 @@ api.put('/accounts/:accountId', auth.authenticateToken, accountController.update
 api.delete('/accounts/:accountId', auth.authenticateToken, accountController.delete, util.handleErrors);
 
 // ========================== PLAID TRANSACTIONS ==========================
-api.get('/transactions', auth.authenticateToken, transactionController.listAll, util.handleErrors);
+api.get('/transactions', auth.authenticateToken, transactionController.listByUser, util.handleErrors);
 api.get('/accounts/:accountId/transactions', auth.authenticateToken, transactionController.list, util.handleErrors);
-api.get('/accounts/:accountId/transactions/:transactionId', auth.authenticateToken, transactionController.find, util.handleErrors);
-api.put('/accounts/:accountId/transactions/:transactionId', auth.authenticateToken, transactionController.list, util.handleErrors);
-api.delete('/accounts/:accountId/transactions/:transactionId', auth.authenticateToken, transactionController.list, util.handleErrors);
+api.get('/transactions/:transactionId', auth.authenticateToken, transactionController.find, util.handleErrors);
+api.put('/transactions/:transactionId', auth.authenticateToken, transactionController.list, util.handleErrors);
+api.delete('/transactions/:transactionId', auth.authenticateToken, transactionController.list, util.handleErrors);
 
 module.exports = api;

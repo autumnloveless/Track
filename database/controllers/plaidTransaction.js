@@ -38,6 +38,15 @@ exports.mostRecent = async (itemId) => {
   return transaction ? { success: true, transaction: transaction } : { success: false, error: "transaction Not Found" };
 };
 
+exports.listByUser = async (userId) => {
+  const transactions = await models.PlaidTransaction.findAll({ where: { userId: userId } })
+  if (transactions) {
+    return { success: true, transactions: transactions };
+  } else {
+    return { success: false, error: "transactions Not Found" };
+  }
+};
+
 exports.list = async (query = null) => {
   const transactions = query
     ? await models.PlaidTransaction.findAll({ where: query })
