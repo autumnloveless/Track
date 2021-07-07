@@ -10,23 +10,9 @@ exports.bulkCreate = async (accounts) => {
   return { success: true };
 };
 
-exports.upsert = async (account) => {
-  if(account.id) {
-    result = await exports.find(account.id);
-    if (result.success){
-      updatedAccount = await result.account.update(newData);
-      return { "success": true, "account": updatedAccount };
-    } else {
-      return await exports.create(account);
-    }
-  } else {
-    return await exports.create(account);
-  }
-}
-
 exports.find = async (id) => {
   const account = await models.PlaidAccount.findOne({ where: { id: id } });
-  return account ? { success: true, account: account } : { success: false, error: "account Not Found" };
+  return account ? { success: true, account: account } : { success: false, error: "Account Not Found" };
 };
 
 exports.list = async (query = null) => {
@@ -36,7 +22,7 @@ exports.list = async (query = null) => {
   if (accounts) {
     return { success: true, accounts: accounts };
   } else {
-    return { success: false, error: "accounts Not Found" };
+    return { success: false, error: "Accounts Not Found" };
   }
 };
 

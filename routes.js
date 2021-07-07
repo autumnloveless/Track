@@ -40,16 +40,13 @@ api.post('/plaid/default_update', auth.verifyPlaidWebhook, plaidController.handl
 api.post('/plaid/transactions_removed', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
 
 // ========================== PLAID ACCOUNT ==========================
-api.get('/accounts', auth.authenticateToken, accountController.list, util.handleErrors);
+api.get('/accounts', auth.authenticateToken, accountController.listByUser, util.handleErrors);
 api.get('/accounts/:accountId', auth.authenticateToken, accountController.find, util.handleErrors);
 api.put('/accounts/:accountId', auth.authenticateToken, accountController.update, util.handleErrors);
-api.delete('/accounts/:accountId', auth.authenticateToken, accountController.delete, util.handleErrors);
 
 // ========================== PLAID TRANSACTIONS ==========================
 api.get('/transactions', auth.authenticateToken, transactionController.listByUser, util.handleErrors);
-api.get('/accounts/:accountId/transactions', auth.authenticateToken, transactionController.list, util.handleErrors);
 api.get('/transactions/:transactionId', auth.authenticateToken, transactionController.find, util.handleErrors);
-api.put('/transactions/:transactionId', auth.authenticateToken, transactionController.list, util.handleErrors);
-api.delete('/transactions/:transactionId', auth.authenticateToken, transactionController.list, util.handleErrors);
+api.put('/transactions/:transactionId', auth.authenticateToken, transactionController.update, util.handleErrors);
 
 module.exports = api;
