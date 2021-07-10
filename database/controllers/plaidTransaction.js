@@ -18,8 +18,8 @@ exports.find = async (id) => {
 
 exports.list = async (query = null) => {
   const transactions = query
-    ? await models.PlaidTransaction.findAll({ where: query })
-    : await models.PlaidTransaction.findAll();
+    ? await models.PlaidTransaction.findAll({ order: [['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']], where: query })
+    : await models.PlaidTransaction.findAll({ order: [['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']] });
   if (transactions) {
     return { success: true, transactions: transactions };
   } else {
