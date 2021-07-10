@@ -1,7 +1,7 @@
 const Transaction = require('../database/controllers/plaidTransaction');
 
 exports.find = async (req, res) => {
-  result = await Transaction.find(req.params.id, true)
+  let result = await Transaction.find(req.params.transactionId)
   if(result.success && result.transaction.userId != req.user.id) { 
     return res.status(401).json({ success: false, error: "unauthorized" });
   }
