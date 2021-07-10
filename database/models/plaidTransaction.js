@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     accountId: DataTypes.STRING,
     amount: DataTypes.FLOAT,
     read: DataTypes.BOOLEAN,
+    starred: DataTypes.BOOLEAN,
     isoCurrencyCode: DataTypes.STRING,
     unofficialCurrencyCode: DataTypes.STRING,
     category: DataTypes.STRING,

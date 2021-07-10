@@ -16,6 +16,7 @@ module.exports = {
       },
       userId: Sequelize.STRING,
       read: Sequelize.BOOLEAN,
+      starred: Sequelize.BOOLEAN,
       transactionId: Sequelize.STRING,
       itemId: Sequelize.STRING,
       accountId: Sequelize.STRING,

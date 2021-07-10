@@ -14,7 +14,7 @@ exports.listByUser = async (req, res) => {
 }
 
 exports.update = async (req, res) => {
-  let { success, transaction, error } = await Transaction.find(req.params.id)
+  let { success, transaction, error } = await Transaction.find(req.params.transactionId)
   if(!success) { 
     return res.status(400).json({ success: false, error: error }) 
   } else if(transaction.userId != req.user.id) { 
