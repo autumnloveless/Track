@@ -13,7 +13,12 @@ exports.bulkCreate = async (transactions) => {
 
 exports.find = async (id) => {
   const transaction = await models.PlaidTransaction.findOne({ where: { id: id } });
-  return transaction ? { success: true, transaction: transaction } : { success: false, error: "transaction Not Found" };
+  return transaction ? { success: true, transaction: transaction } : { success: false, error: "Transaction Not Found" };
+};
+
+exports.bulkFind = async (ids) => {
+  const transactions = await models.PlaidTransaction.findAll({ where: { id: { [Op.in]: ids } } });
+  return transactions ? { success: true, transactions: transactions } : { success: false, error: "Transactions Not Found" };
 };
 
 exports.list = async (query = null) => {
@@ -50,4 +55,13 @@ exports.bulkDelete = async (ids) => {
 exports.update = async (transaction, newData) => {
   updatedTransaction = await transaction.update(newData);
   return { "success": true, "transaction": updatedTransaction };
+};
+
+exports.bulkUpdate = async (ids, newData) => {
+  await models.PlaidTransaction.update(newData, { where: {
+    id: {
+      [Op.in]: ids
+    }
+  }});
+  return { "success": true };
 };

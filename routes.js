@@ -46,6 +46,7 @@ api.put('/accounts/:accountId', auth.authenticateToken, accountController.update
 
 // ========================== PLAID TRANSACTIONS ==========================
 api.get('/transactions', auth.authenticateToken, transactionController.listByUser, util.handleErrors);
+api.put('/transactions/bulkUpdate', auth.authenticateToken, transactionController.bulkUpdate, util.handleErrors);
 api.get('/transactions/:transactionId', auth.authenticateToken, transactionController.find, util.handleErrors);
 api.put('/transactions/:transactionId', auth.authenticateToken, transactionController.update, util.handleErrors);
 
