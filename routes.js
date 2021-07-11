@@ -22,11 +22,11 @@ api.put('/user', auth.authenticateToken, userController.updateUser, util.handleE
 api.delete('/user', auth.authenticateToken, userController.deleteUser, util.handleErrors);
 
 // ========================== AUTH ==========================
-api.post('/login', auth.loginMatch, authController.login, util.handleErrors);
-api.get('/logout', auth.authenticateToken, authController.logout, util.handleErrors);
-api.get('/token', authController.refreshToken, util.handleErrors);
-api.post('/register', authController.register, util.handleErrors);
-api.post('/registerAdmin', auth.authenticateToken, auth.minRole(2), authController.registerAdmin, util.handleErrors);
+api.post('/auth/login', auth.loginMatch, authController.login, util.handleErrors);
+api.get('/auth/logout', auth.authenticateToken, authController.logout, util.handleErrors);
+api.get('/auth/token', authController.refreshToken, util.handleErrors);
+api.post('/auth/register', authController.register, util.handleErrors);
+api.post('/auth/registerAdmin', auth.authenticateToken, auth.minRole(2), authController.registerAdmin, util.handleErrors);
 
 // ========================== PLAID SETUP ==========================
 api.get('/plaid/link_token', auth.authenticateToken, plaidController.getLinkToken, util.handleErrors);

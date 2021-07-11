@@ -26,9 +26,9 @@ exports.login = async (req, res) => {
         "id": req.user.id,
         "permissionLevel": req.user.permissionLevel
     }
-    if(req.token) { await authDB.deleteAuth(token) }
+    if(req.cookies?.refresh_token) { await authDB.deleteAuth(req.cookies.refresh_token) }
     const result = await authDB.generateToken(user)
-    res.cookie('refresh_token', result.refreshToken, { secure: true, httpOnly: true, path: "/api/token", expires: moment().add(7,'days').toDate() });
+    res.cookie('refresh_token', result.refreshToken, { secure: true, httpOnly: true, path: "/api/auth", expires: moment().add(7,'days').toDate() });
     res.status(result.success ? 200 : 400).json({ success: result.success, accessToken: result.accessToken, user: req.user })
 }
 

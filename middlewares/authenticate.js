@@ -52,9 +52,6 @@ exports.loginMatch = async (req, res, next) => {
       firstName: result.user.firstName,
       lastName: result.user.lastName
     };
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    req.token = token;
     return next();
   } else {
     return res.status(400).json({ "success": false, "error": "Invalid email or password"});
