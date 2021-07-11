@@ -41,6 +41,7 @@ exports.verifyPlaidWebhook = async (req, res, next) => {
 }
 
 exports.loginMatch = async (req, res, next) => {
+  if (!req.body.email || !req.body.password) { return res.status(400).json({ "success": false, "error": "Invalid email or password"}); } 
   result = await usersDB.getUserByEmail(req.body.email);
   if (!result.success) { return res.status(400).json({ "success": false, "error": "Invalid email or password"}); }
   if (await bcrypt.compare(req.body.password, result.user.password)){
