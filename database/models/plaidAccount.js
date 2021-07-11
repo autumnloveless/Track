@@ -1,6 +1,11 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
   const PlaidAccount = sequelize.define('PlaidAccount', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     userId: DataTypes.STRING,
     accountId: DataTypes.STRING,
     itemId: DataTypes.STRING,
