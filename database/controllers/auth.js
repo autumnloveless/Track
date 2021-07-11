@@ -1,5 +1,6 @@
 const models = require("../models");
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
 
 exports.generateToken = async (user) => {
   const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
