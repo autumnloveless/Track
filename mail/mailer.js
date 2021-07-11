@@ -24,7 +24,6 @@ const getFileText = (filename, options) => {
 exports.forgotPassword = async (userEmail, resetPasswordLink) => {
   // send mail with defined transport object
   let { html: htmlBody } = getFileText('./templates/reset.mjml', { resetPasswordLink: resetPasswordLink });
-  console.log(htmlBody);
 
   let info = await transporter.sendMail({
     from: '"Lumin Support 🦕" <support@trylumin.netlify.app>', // sender address
