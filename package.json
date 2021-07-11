@@ -6,7 +6,10 @@
     "dev": "doppler run -- nodemon app.js",
     "start": "node app.js",
     "email-build": "mjml --build ./mail/templates-mjml/reset.mjml -o ./mail/templates-html/reset.html",
-    "email-watch": "mjml --watch ./mail/templates-mjml/reset.mjml -o ./mail/templates-html/reset.html"
+    "email-watch": "mjml --watch ./mail/templates-mjml/reset.mjml -o ./mail/templates-html/reset.html",
+    "migrate": "doppler run -- npx sequelize-cli db:migrate",
+    "migrate-undo": "doppler run -- npx sequelize-cli db:migrate:undo",
+    "migrate-undo-all": "doppler run -- npx sequelize-cli db:migrate:undo:all"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
