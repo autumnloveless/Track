@@ -93,7 +93,7 @@ const fetchTransactions = async (plaidItemId, startDate, endDate) => {
 
 const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate, read = false) => {
   // Fetch new transactions from plaid api.
-  let { transactions: incomingTransactions, accounts } =
+  let { transactions: incomingTransactions, accounts: incomingAccounts } =
     await fetchTransactions(plaidItemId, startDate, endDate);
 
   // Retrieve existing transactions from our db.
@@ -160,7 +160,24 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
     transactionCode: transaction.transaction_code,
     transactionType: transaction.transaction_type,
   }));
-  accounts = accounts.map(account => ({
+
+  let { accounts:existingAccounts } = await Account.list({ userId: userId });
+  // Compare to find new transactions.
+  const existingAccountIds = existingAccounts.reduce(
+    (idMap, account) => ({
+      ...idMap,
+      [account.accountId]: account.accountId,
+    }),
+    {}
+  );
+  let accountsToStore = incomingAccounts.filter(
+    ({ account_id: accountId }) => {
+      const isExisting = existingAccountIds[accountId];
+      return !isExisting;
+    }
+  );
+
+  accountsToStore = accountsToStore.map(account => ({
     userId: userId,
     accountId: account.account_id,
     itemId: plaidItemId,
@@ -176,9 +193,9 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
     type: account.type,
     subtype: account.subtype,
     verificationStatus: account.verification_status,
-  }))
+  }));
 
-  await Account.bulkCreate(accounts);
+  await Account.bulkCreate(accountsToStore);
   await Transaction.bulkCreate(transactionsToStore);
   await Transaction.bulkDelete(transactionsToRemove);
   return;
