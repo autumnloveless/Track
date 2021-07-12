@@ -108,9 +108,9 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
 
   // Compare to find new transactions.
   const existingTransactionIds = existingTransactions.reduce(
-    (idMap, { plaid_transaction_id: transactionId }) => ({
+    (idMap, transaction) => ({
       ...idMap,
-      [transactionId]: transactionId,
+      [transaction.transactionId]: transaction.transactionId,
     }),
     {}
   );
@@ -130,8 +130,8 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
     {}
   );
   const transactionsToRemove = existingTransactions.filter(
-    ({ plaid_transaction_id: transactionId }) => {
-      const isIncoming = incomingTransactionIds[transactionId];
+    (transaction) => {
+      const isIncoming = incomingTransactionIds[transaction.transactionId];
       return !isIncoming;
     }
   ).map((transaction) => transaction.transaction_id);
@@ -232,7 +232,7 @@ exports.updateTransactions = async (req, res) => {
   const endDate = moment().format("YYYY-MM-DD");
 
   const { items } = await Item.get({ userId: req.user.id });
-  items.forEach(async (item) => {
+  await items.forEach(async (item) => {
     await handleTransactionsUpdate(req.user.id, item.itemId, startDate, endDate)
   });
   
