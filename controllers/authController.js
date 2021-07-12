@@ -1,5 +1,6 @@
 const authDB = require("../database/controllers/auth");
 const usersDB = require("../database/controllers/users");
+const resetTokenDB = require("../database/controllers/resetToken");
 const mailer = require("../mail/mailer");
 const moment = require("moment");
 jwt = require("jsonwebtoken")
@@ -46,6 +47,18 @@ exports.forgotPassword = async (req, res) => {
     // mail forgot password link
     await mailer.forgotPassword(user.email, "http://localhost:5000/#/resetPassword");
     return res.status(200).json({ success: true});
+}
+
+exports.resetPassword = async (req, res) => {
+    const { success, user } = await usersDB.getUserById(req.user.id);
+    if(!success) { return res.status(200).json({ success: true}); } // show same message if success or failure
+    // check reset token
+    const { resetToken } = await resetTokenDB.getResetTokenById(req.body.tokenId);
+    if(resetToken.userId != req.user.id) { return res.status(400).json({ success: false }) }
+    // update password
+    let result = await usersDB.updateUser(user.id, { password: req.body.password });
+    resetTokenDB.deleteResetToken(req.body.tokenId);
+    return res.status(result.success ? 200 : 400).json({ success: result.success });
 }
 
 exports.register = async (req,res) => {
