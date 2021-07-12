@@ -6,7 +6,8 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    userId: DataTypes.STRING
+    userId: DataTypes.STRING,
+    expiration: DataTypes.DATE
   }, {});
   ResetToken.associate = function(models) {
     // associations can be defined here
