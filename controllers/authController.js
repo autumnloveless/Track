@@ -44,20 +44,23 @@ exports.logout = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
     const { success, user } = await usersDB.getUserByEmail(req.body.email);
     if(!success) { return res.status(200).json({ success: true}); } // show same message if success or failure
+    let { token }  = await resetTokenDB.createResetToken({ 
+        userId: user.id,
+        expiration: moment().add(30,'minutes').toDate()
+    });
+
     // mail forgot password link
-    await mailer.forgotPassword(user.email, "http://localhost:5000/#/resetPassword");
+    const resetLink = process.env.FRONTEND_URL + '#/reset_password/' + token.id;
+    await mailer.forgotPassword(user.email, resetLink);
     return res.status(200).json({ success: true});
 }
 
 exports.resetPassword = async (req, res) => {
-    const { success, user } = await usersDB.getUserById(req.user.id);
-    if(!success) { return res.status(200).json({ success: true}); } // show same message if success or failure
     // check reset token
-    const { resetToken } = await resetTokenDB.getResetTokenById(req.body.tokenId);
-    if(resetToken.userId != req.user.id) { return res.status(400).json({ success: false }) }
+    const { token } = await resetTokenDB.getResetTokenById(req.body.tokenId);
     // update password
-    let result = await usersDB.updateUser(user.id, { password: req.body.password });
-    resetTokenDB.deleteResetToken(req.body.tokenId);
+    let result = await usersDB.updateUser(token.userId, { password: req.body.password });
+    resetTokenDB.deleteResetToken(token.id);
     return res.status(result.success ? 200 : 400).json({ success: result.success });
 }
 
