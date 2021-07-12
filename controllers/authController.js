@@ -50,7 +50,7 @@ exports.forgotPassword = async (req, res) => {
     });
 
     // mail forgot password link
-    const resetLink = process.env.FRONTEND_URL + '#/reset_password/' + token.id;
+    const resetLink = process.env.FRONTEND_URL + '/#/reset_password/' + token.id;
     await mailer.forgotPassword(user.email, resetLink);
     return res.status(200).json({ success: true});
 }
