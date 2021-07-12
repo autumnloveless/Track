@@ -32,7 +32,7 @@ api.post('/auth/registerAdmin', auth.authenticateToken, auth.minRole(2), authCon
 // ========================== PLAID SETUP ==========================
 api.get('/plaid/link_token', auth.authenticateToken, plaidController.getLinkToken, util.handleErrors);
 api.post('/plaid/access_token', auth.authenticateToken, plaidController.setAccessToken, util.handleErrors);
-api.post('/plaid/update_transactions', auth.authenticateToken, plaidController.updateTransactions, util.handleErrors);
+api.get('/plaid/update_transactions', auth.authenticateToken, plaidController.updateTransactions, util.handleErrors);
 
 // ========================== PLAID WEBHOOKS ==========================
 api.post('/plaid/initial_update', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);

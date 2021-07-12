@@ -230,7 +230,11 @@ exports.handleTransactionsWebhook = async (req, res) => {
 exports.updateTransactions = async (req, res) => {
   const startDate = moment().subtract(30, "days").format("YYYY-MM-DD");
   const endDate = moment().format("YYYY-MM-DD");
-  const plaidItemId = req.body.item_id;
-  await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate)
+
+  const { items } = await Item.get({ userId: req.user.id });
+  items.forEach(async (item) => {
+    await handleTransactionsUpdate(req.user.id, item.itemId, startDate, endDate)
+  });
+  
   res.status(200).json({"success": true})
 }
