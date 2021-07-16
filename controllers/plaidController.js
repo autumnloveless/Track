@@ -8,7 +8,7 @@ const moment = require("moment");
 const client = new plaid.Client({
   clientID: process.env.PLAID_CLIENT_ID,
   secret: process.env.PLAID_SECRET,
-  env: plaid.environments.sandbox,
+  env: plaid.environments.development,
   options: { version: "2020-09-14" },
 });
 const PLAID_PRODUCTS = (process.env.PLAID_PRODUCTS || "transactions").split(

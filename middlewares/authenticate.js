@@ -26,7 +26,7 @@ exports.verifyPlaidWebhook = async (req, res, next) => {
   const client = new plaid.Client({
     clientID: process.env.PLAID_CLIENT_ID,
     secret: process.env.PLAID_SECRET,
-    env: plaid.environments.sandbox,
+    env: plaid.environments.development,
     options: { version: '2020-09-14' }
   });
   const response = await client.getWebhookVerificationKey(keyId).catch((err) => { return res.sendStatus(401)});
