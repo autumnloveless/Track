@@ -27,7 +27,7 @@ api.get('/auth/logout', auth.authenticateToken, authController.logout, util.hand
 api.post('/auth/forgotPassword', authController.forgotPassword, util.handleErrors);
 api.post('/auth/resetPassword', authController.resetPassword, util.handleErrors);
 api.get('/auth/token', authController.refreshToken, util.handleErrors);
-// api.post('/auth/register', authController.register, util.handleErrors);
+api.post('/auth/register', authController.register, util.handleErrors);
 api.post('/auth/registerAdmin', auth.authenticateToken, auth.minRole(2), authController.registerAdmin, util.handleErrors);
 
 // ========================== PLAID SETUP ==========================
