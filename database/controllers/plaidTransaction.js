@@ -34,8 +34,8 @@ exports.list = async (query = null) => {
 
 exports.listPaginated = async (query=null,limit=10, offset=0) => {
   let { rows:transactions, count } = query 
-  ? await models.PlaidTransaction.findAndCountAll({where: query,limit: limit, offset: offset})
-  : await models.PlaidTransaction.findAndCountAll({limit: limit, offset: offset});
+  ? await models.PlaidTransaction.findAndCountAll({where: query,limit: limit, offset: offset, order: [['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']]})
+  : await models.PlaidTransaction.findAndCountAll({limit: limit, offset: offset, order: [['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']]});
   return transactions ? { success: true, transactions: transactions, count: count } : { success: false, error: "Transactions Not Found" };
 }
 
