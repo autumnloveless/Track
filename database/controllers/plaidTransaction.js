@@ -1,5 +1,5 @@
 const models = require("../models");
-const { Op } = require("sequelize");
+const { Op, Transaction } = require("sequelize");
 
 exports.create = async (transaction) => {
   const newTransaction = await models.PlaidTransaction.create(transaction);
@@ -31,6 +31,13 @@ exports.list = async (query = null) => {
     return { success: false, error: "transactions Not Found" };
   }
 };
+
+exports.listPaginated = async (query=null,limit=10, offset=0) => {
+  let { rows:transactions, count } = query 
+  ? await models.PlaidTransaction.findAndCountAll({where: query,limit: limit, offset: offset})
+  : await models.PlaidTransaction.findAndCountAll({limit: limit, offset: offset});
+  return transactions ? { success: true, transactions: transactions, count: count } : { success: false, error: "Transactions Not Found" };
+}
 
 exports.delete = async (id) => {
   await models.PlaidTransaction.destroy({ 

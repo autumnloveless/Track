@@ -12,6 +12,11 @@ server.use(cors({ origin: process.env.FRONTEND_URL, credentials :  true}));
 server.use(morgan('combined'));
 server.use(express.urlencoded({ extended: false }));
 server.use(cookieParser());
+server.use((req, res, next)  => {
+    // set default or minimum is 10 (as it was prior to v0.2.0)
+    if (req.query.limit <= 10) req.query.limit = 10;
+    next();
+});
 
 server.use('/api', api);
 
