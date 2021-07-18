@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "doppler run -- nodemon app.js",
     "start": "node app.js",
+    "update-plaid-webhook": "doppler run -- node -e 'require(\"./helper\").updatePlaidWebhook()'",
     "email-build": "mjml --build ./mail/templates-mjml/reset.mjml -o ./mail/templates-html/reset.html",
     "email-watch": "mjml --watch ./mail/templates-mjml/reset.mjml -o ./mail/templates-html/reset.html",
     "migrate": "doppler run -- npx sequelize-cli db:migrate",
