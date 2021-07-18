@@ -2,6 +2,7 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const api = require('./routes');
 const server = express();
 
@@ -10,6 +11,7 @@ server.use(helmet());
 server.use(cors({ origin: process.env.FRONTEND_URL, credentials :  true}));
 server.use(morgan('combined'));
 server.use(express.urlencoded({ extended: false }));
+server.use(cookieParser());
 
 server.use('/api', api);
 
