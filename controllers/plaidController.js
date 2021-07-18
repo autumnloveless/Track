@@ -124,6 +124,7 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
   );
 
   // Compare to find removed transactions (pending transactions that have posted or cancelled).
+
   const incomingTransactionIds = incomingTransactions.reduce(
     (idMap, { transaction_id: transactionId }) => ({
       ...idMap,
@@ -131,12 +132,13 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
     }),
     {}
   );
-  const transactionsToRemove = existingTransactions.filter(
-    (transaction) => {
+
+  const transactionsToRemove = existingTransactions
+  .filter((transaction) => {
       const isIncoming = incomingTransactionIds[transaction.transactionId];
       return !isIncoming;
-    }
-  ).map((transaction) => transaction.transaction_id);
+    })
+  .map((transaction) => transaction.transactionId);
 
   transactionsToStore = transactionsToStore.map((transaction) => ({
     userId: userId,
