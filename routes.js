@@ -34,10 +34,7 @@ api.post('/plaid/access_token', auth.authenticateToken, plaidController.setAcces
 api.get('/plaid/update_transactions', auth.authenticateToken, plaidController.updateTransactions, util.handleErrors);
 
 // ========================== PLAID WEBHOOKS ==========================
-api.post('/plaid/initial_update', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
-api.post('/plaid/historical_update', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
-api.post('/plaid/default_update', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
-api.post('/plaid/transactions_removed', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
+api.post('/plaid/webhook', auth.verifyPlaidWebhook, plaidController.handleTransactionsWebhook, util.handleErrors);
 
 // ========================== PLAID ACCOUNT ==========================
 api.get('/accounts', auth.authenticateToken, accountController.listByUser, util.handleErrors);
