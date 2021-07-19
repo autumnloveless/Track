@@ -11,7 +11,7 @@ exports.find = async (req, res) => {
 
 exports.listByUser = async (req, res) => {
   // result = await Transaction.listPaginated({userId: req.user.id}, req.query.limit, req.query.offset)
-  result = await Transaction.list({userId: req.user.id})
+  result = await Transaction.list({userId: req.user.id, pending: false})
   res.status(result.success ? 200 : 400).json(result)
 }
 

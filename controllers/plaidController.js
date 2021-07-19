@@ -28,8 +28,7 @@ exports.getLinkToken = async (request, response) => {
     products: PLAID_PRODUCTS,
     country_codes: PLAID_COUNTRY_CODES,
     language: "en",
-    webhook: process.env.API_URL + "/api/plaid/webhook",
-    redirect_uri: process.env.FRONTEND_URL + "/#/oauth"
+    webhook: process.env.API_URL + "/api/plaid/webhook"
   };
 
   if (PLAID_REDIRECT_URI !== "") {
