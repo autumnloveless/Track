@@ -34,8 +34,8 @@ exports.getLinkToken = async (request, response) => {
   if (PLAID_REDIRECT_URI !== "") {
     configs.redirect_uri = PLAID_REDIRECT_URI;
   }
-  const createTokenResponse = await client.createLinkToken(configs);
-  return response.status(200).json(createTokenResponse);
+  const createTokenResponse = await client.createLinkToken(configs).catch(e => console.error("Error creating link token", e));
+  return response.status(createTokenResponse ? 200 : 400).json(createTokenResponse ? createTokenResponse : {error: "Error creating link token"});
 };
 
 // Exchange token flow - exchange a Link public_token for an API access_token
