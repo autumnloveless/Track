@@ -64,11 +64,10 @@ const fetchTransactions = async (plaidItemId, startDate, endDate) => {
     const { item } = await Item.findByItemId(plaidItemId);
     const accessToken = item.accessToken;
 
-    const response = await client
-      .getTransactions(accessToken, startDate, endDate, {})
-      .catch((err) => {
-        console.log(err)
-      });
+    const response = await client.getTransactions(accessToken, startDate, endDate, {})
+    .catch((err) => {
+      console.log(err)
+    });
     let transactions = response.transactions;
     let accounts = response.accounts;
     const total_transactions = response.total_transactions;
@@ -95,49 +94,47 @@ const fetchTransactions = async (plaidItemId, startDate, endDate) => {
 const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate, read = false) => {
   // Fetch new transactions from plaid api.
   let { transactions: incomingTransactions, accounts: incomingAccounts } =
-    await fetchTransactions(plaidItemId, startDate, endDate);
+    await fetchTransactions(plaidItemId, startDate, endDate).catch(e => {
+      console.log("Error getting transactions from database!", e);
+      return;
+    });
 
   // Retrieve existing transactions from our db.
   const { transactions: existingTransactions } = await Transaction.list({
     [Op.and]: {
       date: {
-        [Op.between]: [startDate, endDate]
+        [Op.between]: [new Date(startDate), new Date(endDate)]
       },
       itemId: plaidItemId,
     },
+  }).catch(e => {
+    console.log("Error getting transactions from database!", e);
+    return;
   });
 
   // Compare to find new transactions.
-  const existingTransactionIds = existingTransactions.reduce(
-    (idMap, transaction) => ({
-      ...idMap,
-      [transaction.transactionId]: transaction.transactionId,
-    }),
-    {}
-  );
-  let transactionsToStore = incomingTransactions.filter(
-    ({ transaction_id: transactionId }) => {
-      const isExisting = existingTransactionIds[transactionId];
-      return !isExisting;
-    }
-  );
+  const existingTransactionIds = existingTransactions.reduce((idMap, transaction) => ({
+    ...idMap,
+    [transaction.transactionId]: transaction.transactionId,
+  }), {});
+  
+  let transactionsToStore = incomingTransactions.filter(({ transaction_id: transactionId }) => {
+    const isExisting = existingTransactionIds[transactionId];
+    return !isExisting;
+  });
+
+  console.log(transactionsToStore);
 
   // Compare to find removed transactions (pending transactions that have posted or cancelled).
+  const incomingTransactionIds = incomingTransactions.reduce((idMap, { transaction_id: transactionId }) => ({
+    ...idMap,
+    [transactionId]: transactionId,
+  }), {});
 
-  const incomingTransactionIds = incomingTransactions.reduce(
-    (idMap, { transaction_id: transactionId }) => ({
-      ...idMap,
-      [transactionId]: transactionId,
-    }),
-    {}
-  );
-
-  const transactionsToRemove = existingTransactions
-  .filter((transaction) => {
-      const isIncoming = incomingTransactionIds[transaction.transactionId];
-      return !isIncoming;
-    })
-  .map((transaction) => transaction.transactionId);
+  const transactionsToRemove = existingTransactions.filter((transaction) => {
+    const isIncoming = incomingTransactionIds[transaction.transactionId];
+    return !isIncoming;
+  }).map((transaction) => transaction.transactionId);
 
   transactionsToStore = transactionsToStore.map((transaction) => ({
     userId: userId,
@@ -165,22 +162,23 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
   }));
 
   let { accounts:existingAccounts } = await Account.list({ userId: userId });
-  // Compare to find new transactions.
-  const existingAccountIds = existingAccounts.reduce(
-    (idMap, account) => ({
+  // Compare to find new accounts.
+  const existingAccountMap = existingAccounts.reduce((idMap, account) => ({
       ...idMap,
-      [account.accountId]: account.accountId,
+      [account.accountId]: account,
     }),
     {}
   );
-  let accountsToStore = incomingAccounts.filter(
-    ({ account_id: accountId }) => {
-      const isExisting = existingAccountIds[accountId];
-      return !isExisting;
+  let accountsToStore = incomingAccounts.map((account) => {
+    const existingAccount = existingAccountMap[account.account_id];
+    if(existingAccount?.id) { 
+      account.id = existingAccount.id; 
     }
-  );
+    return account;
+  });
 
   accountsToStore = accountsToStore.map(account => ({
+    id: account.id,
     userId: userId,
     accountId: account.account_id,
     itemId: plaidItemId,
@@ -198,9 +196,22 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
     verificationStatus: account.verification_status,
   }));
 
-  await Account.bulkCreate(accountsToStore);
-  await Transaction.bulkCreate(transactionsToStore);
-  await Transaction.bulkDelete(transactionsToRemove);
+  await Account.bulkCreate(accountsToStore).catch(e => {
+    console.log("Error bulk creating accounts!", e);
+    return
+  });
+  if(transactionsToStore.length > 0){
+    await Transaction.bulkCreate(transactionsToStore).catch(e => {
+      console.log("Error bulk creating transactions!", e);
+      return
+    });
+  }
+  if(transactionsToRemove.length > 0){
+    await Transaction.bulkDelete(transactionsToRemove).catch(e => {
+      console.log("Error deleting transactions!", e);
+      return
+    });
+  }
   return;
 };
 
@@ -271,9 +282,9 @@ exports.updateTransactions = async (req, res) => {
   const endDate = moment().format("YYYY-MM-DD");
 
   const { items } = await Item.get({ userId: req.user.id });
-  await items.forEach(async (item) => {
+  await Promise.all(items.map(async (item) => {
     await handleTransactionsUpdate(req.user.id, item.itemId, startDate, endDate)
-  });
+  }));
   
   res.status(200).json({"success": true})
 }

@@ -6,7 +6,7 @@ exports.create = async (account) => {
 };
 
 exports.bulkCreate = async (accounts) => {
-  await models.PlaidAccount.bulkCreate(accounts, { updateOnDuplicate: ["accountId"] });
+  await models.PlaidAccount.bulkCreate(accounts, {updateOnDuplicate: ["balanceAvailable","balanceCurrent","balanceLimit"]});
   return { success: true };
 };
 
