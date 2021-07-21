@@ -205,6 +205,7 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
 };
 
 exports.handleTransactionsWebhook = async (req, res) => {
+  console.log("Handling Transactions Webhook");
   const {
     webhook_code: webhookCode,
     item_id: plaidItemId,
@@ -216,35 +217,53 @@ exports.handleTransactionsWebhook = async (req, res) => {
     case "INITIAL_UPDATE": {
       // Fired when an Item's initial transaction pull is completed.
       // Note: The default pull is 30 days.
+      console.log("Performing initial update");
       const startDate = moment().subtract(30, "days").format("YYYY-MM-DD");
       const endDate = moment().format("YYYY-MM-DD");
-      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate, true);
+      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate, true).catch(e => {
+        console.log("Error handling transactions update", e);
+        return res.sendStatus(500);
+      });
       break;
     }
     case "HISTORICAL_UPDATE": {
       // Fired when an Item's historical transaction pull is completed. Plaid fetches as much
       // data as is available from the financial institution.
+      console.log("Performing historical update");
       const startDate = moment().subtract(6, "months").format("YYYY-MM-DD");
       const endDate = moment().format("YYYY-MM-DD");
-      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate, true);
+      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate, true).catch(e => {
+        console.log("Error handling transactions update", e);
+        return res.sendStatus(500);
+      });
       break;
     }
     case "DEFAULT_UPDATE": {
       // Fired when new transaction data is available as Plaid performs its regular updates of
       // the Item. Since transactions may take several days to post, we'll fetch 14 days worth of
       // transactions from Plaid and reconcile them with the transactions we already have stored.
+      console.log("Performing default update");
       const startDate = moment().subtract(14, "days").format("YYYY-MM-DD");
       const endDate = moment().format("YYYY-MM-DD");
-      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate);
+      await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate).catch(e => {
+        console.log("Error handling transactions update", e);
+        return res.sendStatus(500);
+      });
       break;
     }
     case "TRANSACTIONS_REMOVED": {
-      await Transaction.bulkDelete(removedTransactions);
+      console.log("Performing transactions removed");
+      await Transaction.bulkDelete(removedTransactions).catch(e => {
+        console.log("Error deleting transactions", e);
+        return res.sendStatus(500);
+      });
       break;
     }
     default:
       console.log("unhandled webhook type received.");
   }
+  console.log("Update successful!");
+  return res.sendStatus(200);
 };
 
 exports.updateTransactions = async (req, res) => {
