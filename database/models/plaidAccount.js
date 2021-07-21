@@ -23,7 +23,11 @@ module.exports = (sequelize, DataTypes) => {
     verificationStatus: DataTypes.STRING,
   }, {});
   PlaidAccount.associate = function(models) {
-    // associations can be defined here
+    PlaidAccount.hasMany(models.PlaidTransaction, {
+      onDelete: 'CASCADE',
+      foreignKey: 'accountId',
+      targetKey:'accountId'
+    });
   };
   return PlaidAccount;
 };

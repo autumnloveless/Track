@@ -30,7 +30,10 @@ module.exports = (sequelize, DataTypes) => {
     transactionType: DataTypes.STRING
   }, {});
   PlaidTransaction.associate = function(models) {
-    // associations can be defined here
+    PlaidTransaction.belongsTo(models.PlaidAccount, {
+      foreignKey: 'accountId',
+      targetKey:'accountId'
+    });
   };
   return PlaidTransaction;
 };
