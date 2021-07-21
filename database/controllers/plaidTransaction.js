@@ -23,8 +23,8 @@ exports.bulkFind = async (ids) => {
 
 exports.list = async (query = null) => {
   const transactions = query
-    ? await models.PlaidTransaction.findAll({ order: [ ['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']], where: query })
-    : await models.PlaidTransaction.findAll({ order: [ ['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']] });
+    ? await models.PlaidTransaction.findAll({ order: [ ['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']], where: query, include: models.PlaidAccount })
+    : await models.PlaidTransaction.findAll({ order: [ ['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']], include: models.PlaidAccount });
   if (transactions) {
     return { success: true, transactions: transactions };
   } else {
