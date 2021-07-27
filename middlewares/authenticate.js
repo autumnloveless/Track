@@ -1,8 +1,16 @@
 const jwt = require("jsonwebtoken");
+const jwt_decode = require('jwt-decode');
 const bcrypt = require("bcrypt");
 const usersDB = require('../database/controllers/users');
 const Item = require('../database/controllers/plaidItem')
 const plaid = require('plaid');
+
+const client = new plaid.Client({
+  clientID: process.env.PLAID_CLIENT_ID,
+  secret: process.env.PLAID_SECRET,
+  env: plaid.environments.development,
+  options: { version: '2020-09-14' }
+});
 
 
 exports.authenticateToken = async (req, res, next) => {
@@ -20,38 +28,34 @@ exports.authenticateToken = async (req, res, next) => {
 
 exports.verifyPlaidWebhook = async (req, res, next) => {
   console.log("VERIFYING PLAID WEBHOOK");
-  const verificationHeader = req.headers['plaid-verification'];
-  decodedJWT = jwt.decode(verificationHeader, { complete: true });
+  const signedJwt = req.headers['plaid-verification'];
+  const decodedToken = jwt_decode(signedJwt);
+  const decodedJWTHeader = jwt_decode(signedJwt, { header: true });
   if (decodedJWT.alg != "ES256" ) { 
-    console.log("PLAID WEBHOOK INVALID - NO ALG",  {"decodedJWT": decodedJWT, "plaid-verification header": verificationHeader});
+    console.log("PLAID WEBHOOK INVALID - NO ALG",  {"decodedJWT": decodedJWT, "plaid-verification header": signedJwt});
     return res.sendStatus(403) 
   }
-  const keyId = decodedJWT.kid;
-  const client = new plaid.Client({
-    clientID: process.env.PLAID_CLIENT_ID,
-    secret: process.env.PLAID_SECRET,
-    env: plaid.environments.development,
-    options: { version: '2020-09-14' }
-  });
+  const keyId = decodedJWTHeader.kid;
   const response = await client.getWebhookVerificationKey(keyId).catch((err) => { 
     console.log("PLAID WEBHOOK INVALID - ERROR GETTING VERIFICATION", err); 
     return res.sendStatus(401)
   });
   const key = response.key;
 
-  jwt.verify(verificationHeader, key, async (err) => {
-    if (err) { 
-      console.log("PLAID WEBHOOK INVALID - INVALID JWT", err, jwt); 
-      return res.sendStatus(403)
-    }
-    const { item } = await Item.findByItemId(req.body.item_id).catch(e => { 
-      console.log("Error finding item with provided id: ", req.body.item_id, e); 
-      return res.sendStatus(401)
-    });
-    req.user = { id: item.userId }
-    console.log("PLAID WEBHOOK VALIDATED SUCCESSFULLY"); 
-    next();
+  try {
+    jwt.verify(signedJwt, key, { maxAge: '5 min' });
+  } catch (error) {
+    console.log("PLAID WEBHOOK INVALID - INVALID JWT", err, jwt); 
+    return res.sendStatus(403)
+  }
+
+  const { item } = await Item.findByItemId(req.body.item_id).catch(e => { 
+    console.log("Error finding item with provided id: ", req.body.item_id, req.body, e); 
+    return res.sendStatus(401)
   });
+  req.user = { id: item.userId }
+  console.log("PLAID WEBHOOK VALIDATED SUCCESSFULLY"); 
+  next();
 }
 
 exports.loginMatch = async (req, res, next) => {
