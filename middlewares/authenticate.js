@@ -4,6 +4,12 @@ const bcrypt = require("bcrypt");
 const usersDB = require('../database/controllers/users');
 const Item = require('../database/controllers/plaidItem')
 const plaid = require('plaid');
+var Rollbar = require('rollbar');
+var rollbar = new Rollbar({
+    accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+    captureUncaught: true,
+    captureUnhandledRejections: true
+});
 
 const client = new plaid.Client({
   clientID: process.env.PLAID_CLIENT_ID,
@@ -27,16 +33,19 @@ exports.authenticateToken = async (req, res, next) => {
 }
 
 exports.verifyPlaidWebhook = async (req, res, next) => {
+  rollbar.log("VERIFYING PLAID WEBHOOK");
   console.log("VERIFYING PLAID WEBHOOK");
   const signedJwt = req.headers['plaid-verification'];
   const decodedJWT = jwt_decode(signedJwt);
   const decodedJWTHeader = jwt_decode(signedJwt, { header: true });
   if (decodedJWT.alg != "ES256" ) { 
+    rollbar.error("PLAID WEBHOOK INVALID - NO ALG",  {"decodedJWT": decodedJWT, "plaid-verification header": signedJwt})
     console.log("PLAID WEBHOOK INVALID - NO ALG",  {"decodedJWT": decodedJWT, "plaid-verification header": signedJwt});
     return res.sendStatus(403) 
   }
   const keyId = decodedJWTHeader.kid;
   const response = await client.getWebhookVerificationKey(keyId).catch((err) => { 
+    rollbar.error("PLAID WEBHOOK INVALID - ERROR GETTING VERIFICATION", err);
     console.log("PLAID WEBHOOK INVALID - ERROR GETTING VERIFICATION", err); 
     return res.sendStatus(401)
   });
@@ -45,15 +54,18 @@ exports.verifyPlaidWebhook = async (req, res, next) => {
   try {
     jwt.verify(signedJwt, key, { maxAge: '5 min' });
   } catch (error) {
+    rollbar.error("PLAID WEBHOOK INVALID - INVALID JWT", err, jwt); 
     console.log("PLAID WEBHOOK INVALID - INVALID JWT", err, jwt); 
     return res.sendStatus(403)
   }
 
   const { item } = await Item.findByItemId(req.body.item_id).catch(e => { 
+    rollbar.error("Error finding item with provided id: ", req.body.item_id, req.body, e); 
     console.log("Error finding item with provided id: ", req.body.item_id, req.body, e); 
     return res.sendStatus(401)
   });
   req.user = { id: item.userId }
+  rollbar.log("PLAID WEBHOOK VALIDATED SUCCESSFULLY");
   console.log("PLAID WEBHOOK VALIDATED SUCCESSFULLY"); 
   next();
 }

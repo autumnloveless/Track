@@ -33,6 +33,7 @@
     "pg": "^8.0.3",
     "pg-hstore": "^2.3.3",
     "plaid": "^8.5.2",
+    "rollbar": "^2.24.0",
     "sequelize": "^6.6.5",
     "sequelize-cli": "^6.2.0",
     "twilio": "^3.64.0"

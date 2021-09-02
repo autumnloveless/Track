@@ -5,6 +5,13 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const api = require('./routes');
 const server = express();
+var Rollbar = require('rollbar');
+var rollbar = new Rollbar({
+    accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+    captureUncaught: true,
+    captureUnhandledRejections: true
+});
+
 
 server.use(express.json());
 server.use(helmet());
@@ -19,6 +26,7 @@ server.use((req, res, next)  => {
 });
 
 server.use('/api', api);
+server.use(rollbar.errorHandler());
 
 const PORT = process.env.PORT || 3300;
 server.listen(PORT, () => console.log(`Server is live at http://localhost:${PORT}`));
