@@ -29,7 +29,7 @@ exports.authenticateToken = async (req, res, next) => {
 exports.verifyPlaidWebhook = async (req, res, next) => {
   console.log("VERIFYING PLAID WEBHOOK");
   const signedJwt = req.headers['plaid-verification'];
-  const decodedToken = jwt_decode(signedJwt);
+  const decodedJWT = jwt_decode(signedJwt);
   const decodedJWTHeader = jwt_decode(signedJwt, { header: true });
   if (decodedJWT.alg != "ES256" ) { 
     console.log("PLAID WEBHOOK INVALID - NO ALG",  {"decodedJWT": decodedJWT, "plaid-verification header": signedJwt});
