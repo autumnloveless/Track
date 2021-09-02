@@ -26,7 +26,7 @@ exports.forgotPassword = async (userEmail, resetPasswordLink) => {
   let { html: htmlBody } = getFileText('./templates/reset.mjml', { resetPasswordLink: resetPasswordLink });
 
   let info = await transporter.sendMail({
-    from: '"Lumin Support 🦕" <support@trylumin.netlify.app>', // sender address
+    from: '"Lumin Support 🦕" <' + process.env.SUPPORT_EMAIL + '>', // sender address
     to: userEmail, // list of receivers
     subject: "Forgot Password", // Subject line
     text: `Go to the link below to reset your password: ${resetPasswordLink}`, // plain text body
