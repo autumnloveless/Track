@@ -4,6 +4,12 @@ const mjml2html = require('mjml')
 const handlebars = require('handlebars');
 const fs = require('fs');
 var path = require('path');
+var Rollbar = require('rollbar');
+var rollbar = new Rollbar({
+    accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+    captureUncaught: true,
+    captureUnhandledRejections: true
+});
 
 let transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -33,10 +39,10 @@ exports.forgotPassword = async (userEmail, resetPasswordLink) => {
     html: htmlBody, // html body
   });
 
-  console.log("Message sent: %s", info.messageId);
+  rollbar.log("Email sent: " + info.messageId);
 
   // Preview only available when sending through an Ethereal account
   if(!process.env.NODE_ENV || process.env.NODE_ENV == 'development'){
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    console.log("Preview URL: " + nodemailer.getTestMessageUrl(info));
   }
 };

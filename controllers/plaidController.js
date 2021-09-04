@@ -4,6 +4,12 @@ const Account = require("../database/controllers/plaidAccount");
 const Transaction = require("../database/controllers/plaidTransaction");
 const { Op } = require("sequelize");
 const moment = require("moment");
+var Rollbar = require('rollbar');
+var rollbar = new Rollbar({
+    accessToken: process.env.ROLLBAR_ACCESS_TOKEN,
+    captureUncaught: true,
+    captureUnhandledRejections: true
+});
 
 const client = new plaid.Client({
   clientID: process.env.PLAID_CLIENT_ID,
@@ -34,7 +40,7 @@ exports.getLinkToken = async (request, response) => {
   if (PLAID_REDIRECT_URI !== "") {
     configs.redirect_uri = PLAID_REDIRECT_URI;
   }
-  const createTokenResponse = await client.createLinkToken(configs).catch(e => console.error("Error creating link token", e));
+  const createTokenResponse = await client.createLinkToken(configs).catch(e => rollbar.error("Error creating link token", e));
   return response.status(createTokenResponse ? 200 : 400).json(createTokenResponse ? createTokenResponse : {error: "Error creating link token"});
 };
 
@@ -66,7 +72,7 @@ const fetchTransactions = async (plaidItemId, startDate, endDate) => {
 
     const response = await client.getTransactions(accessToken, startDate, endDate, {})
     .catch((err) => {
-      console.log(err)
+      rollbar.error("Error getting transactions", err)
     });
     let transactions = response.transactions;
     let accounts = response.accounts;
@@ -86,7 +92,7 @@ const fetchTransactions = async (plaidItemId, startDate, endDate) => {
     }
     return { transactions: transactions, accounts: accounts };
   } catch (err) {
-    console.error(`Error fetching transactions: ${err.message}`);
+    rollbar.error("Error fetching plaid transactions", err);
     return { transactions: [], accounts: [] };
   }
 };
@@ -95,7 +101,7 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
   // Fetch new transactions from plaid api.
   let { transactions: incomingTransactions, accounts: incomingAccounts } =
     await fetchTransactions(plaidItemId, startDate, endDate).catch(e => {
-      console.log("Error getting transactions from database!", e);
+      rollbar.error("Error getting transactions from plaid!", e);
       return;
     });
 
@@ -108,7 +114,7 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
       itemId: plaidItemId,
     },
   }).catch(e => {
-    console.log("Error getting transactions from database!", e);
+    rollbar.error("Error getting transactions from database!", e);
     return;
   });
 
@@ -122,8 +128,6 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
     const isExisting = existingTransactionIds[transactionId];
     return !isExisting;
   });
-
-  console.log(transactionsToStore);
 
   // Compare to find removed transactions (pending transactions that have posted or cancelled).
   const incomingTransactionIds = incomingTransactions.reduce((idMap, { transaction_id: transactionId }) => ({
@@ -197,18 +201,18 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
   }));
 
   await Account.bulkCreate(accountsToStore).catch(e => {
-    console.log("Error bulk creating accounts!", e);
+    rollbar.error("Error bulk creating accounts!", e);
     return
   });
   if(transactionsToStore.length > 0){
     await Transaction.bulkCreate(transactionsToStore).catch(e => {
-      console.log("Error bulk creating transactions!", e);
+      rollbar.error("Error bulk creating transactions!", e);
       return
     });
   }
   if(transactionsToRemove.length > 0){
     await Transaction.bulkDelete(transactionsToRemove).catch(e => {
-      console.log("Error deleting transactions!", e);
+      rollbar.error("Error deleting transactions!", e);
       return
     });
   }
@@ -216,7 +220,7 @@ const handleTransactionsUpdate = async (userId, plaidItemId, startDate, endDate,
 };
 
 exports.handleTransactionsWebhook = async (req, res) => {
-  console.log("Handling Transactions Webhook");
+  rollbar.log("Handling Transactions Webhook");
   const {
     webhook_code: webhookCode,
     item_id: plaidItemId,
@@ -228,11 +232,11 @@ exports.handleTransactionsWebhook = async (req, res) => {
     case "INITIAL_UPDATE": {
       // Fired when an Item's initial transaction pull is completed.
       // Note: The default pull is 30 days.
-      console.log("Performing initial update");
+      rollbar.log("Performing initial update");
       const startDate = moment().subtract(30, "days").format("YYYY-MM-DD");
       const endDate = moment().format("YYYY-MM-DD");
       await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate, true).catch(e => {
-        console.log("Error handling transactions update", e);
+        rollbar.error("Error handling transactions update", e);
         return res.sendStatus(500);
       });
       break;
@@ -240,11 +244,11 @@ exports.handleTransactionsWebhook = async (req, res) => {
     case "HISTORICAL_UPDATE": {
       // Fired when an Item's historical transaction pull is completed. Plaid fetches as much
       // data as is available from the financial institution.
-      console.log("Performing historical update");
+      rollbar.log("Performing historical update");
       const startDate = moment().subtract(6, "months").format("YYYY-MM-DD");
       const endDate = moment().format("YYYY-MM-DD");
       await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate, true).catch(e => {
-        console.log("Error handling transactions update", e);
+        rollbar.error("Error handling transactions historical update", e);
         return res.sendStatus(500);
       });
       break;
@@ -253,27 +257,27 @@ exports.handleTransactionsWebhook = async (req, res) => {
       // Fired when new transaction data is available as Plaid performs its regular updates of
       // the Item. Since transactions may take several days to post, we'll fetch 14 days worth of
       // transactions from Plaid and reconcile them with the transactions we already have stored.
-      console.log("Performing default update");
+      rollbar.log("Performing default update");
       const startDate = moment().subtract(14, "days").format("YYYY-MM-DD");
       const endDate = moment().format("YYYY-MM-DD");
       await handleTransactionsUpdate(req.user.id, plaidItemId, startDate, endDate).catch(e => {
-        console.log("Error handling transactions update", e);
+        rollbar.error("Error handling transactions default update", e);
         return res.sendStatus(500);
       });
       break;
     }
     case "TRANSACTIONS_REMOVED": {
-      console.log("Performing transactions removed");
+      rollbar.log("Performing transactions removed");
       await Transaction.bulkDelete(removedTransactions).catch(e => {
-        console.log("Error deleting transactions", e);
+        rollbar.error("Error deleting transactions", e);
         return res.sendStatus(500);
       });
       break;
     }
     default:
-      console.log("unhandled webhook type received.");
+      rollbar.error("unhandled webhook type received: " + webhookCode, webhookCode);
   }
-  console.log("Update successful!");
+  rollbar.log("Update successful!");
   return res.sendStatus(200);
 };
 
