@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const { jwtVerify } = require('jose/jwt/verify');
+const { parseJwk } = require('jose/jwk/parse');
 const jwt_decode = require('jwt-decode');
 const bcrypt = require("bcrypt");
 const usersDB = require('../database/controllers/users');
@@ -47,9 +49,10 @@ exports.verifyPlaidWebhook = async (req, res, next) => {
     return res.sendStatus(401)
   });
   const key = response.key;
+  const parsedKey = await parseJwk(key, 'ES256');
 
   try {
-    jwt.verify(signedJwt, key, { maxAge: '5 min' });
+    jwtVerify(signedJwt, parsedKey, { maxTokenAge: '5 min' });
   } catch (err) {
     rollbar.error("Plaid Webhook Invalid - Invalid JWT", err, signedJwt, key); 
     return res.sendStatus(403)
