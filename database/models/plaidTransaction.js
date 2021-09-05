@@ -34,6 +34,9 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'accountId',
       targetKey:'accountId'
     });
+    PlaidTransaction.hasMany(models.TransactionTag, {
+      foreignKey: 'plaidTransactionId',
+    });
   };
   return PlaidTransaction;
 };
