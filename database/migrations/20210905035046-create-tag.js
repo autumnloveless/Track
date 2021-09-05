@@ -12,7 +12,7 @@ module.exports = {
         type: Sequelize.DataTypes.UUID
       },
       name: {
-        type: Sequelize.DataTypes.UUID
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

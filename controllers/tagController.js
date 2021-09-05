@@ -17,7 +17,7 @@ exports.find = async (req, res) => {
 }
 
 exports.listByUser = async (req, res) => {
-    result = await Tag.list({userId: req.user.id})
+    result = await Tag.get({userId: req.user.id})
     res.status(result.success ? 200 : 400).json(result)
 }
 
