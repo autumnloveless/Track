@@ -4,8 +4,6 @@ const authController = require('./controllers/authController');
 const plaidController = require('./controllers/plaidController');
 const accountController = require('./controllers/accountController');
 const transactionController = require('./controllers/transactionController');
-const tagController = require('./controllers/tagController');
-const transactionTagController = require('./controllers/transactionTagController');
 const util = require('./controllers/utilityController');
 const auth = require('./middlewares/authenticate');
 const api = express.Router();
@@ -20,20 +18,6 @@ api.get('/users', auth.authenticateToken, auth.minRole(2), userController.getUse
 api.get('/user', auth.authenticateToken, userController.getUserById, util.handleErrors);
 api.put('/user', auth.authenticateToken, userController.updateUser, util.handleErrors);
 api.delete('/user', auth.authenticateToken, userController.deleteUser, util.handleErrors);
-
-// ========================== TAGS (Category) ==========================
-api.get('/tags', auth.authenticateToken, tagController.listByUser, util.handleErrors);
-api.post('/tags', auth.authenticateToken, tagController.create, util.handleErrors);
-api.get('/tags/:tagId', auth.authenticateToken, tagController.find, util.handleErrors);
-api.put('/tags/:tagId', auth.authenticateToken, tagController.update, util.handleErrors);
-api.delete('/tags/:tagId', auth.authenticateToken, tagController.deleteTag, util.handleErrors);
-
-// ========================== TRANSACTION TAGS (Xref) ==========================
-api.get('/transactions/:transactionId/tags', auth.authenticateToken, transactionTagController.listByUser, util.handleErrors);
-api.post('/transactions/:transactionId/tags', auth.authenticateToken, transactionTagController.create, util.handleErrors);
-api.get('/transactions/:transactionId/tags/:tagId', auth.authenticateToken, transactionTagController.find, util.handleErrors);
-api.put('/transactions/:transactionId/tags/:tagId', auth.authenticateToken, transactionTagController.update, util.handleErrors);
-api.delete('/transactions/:transactionId/tags/:tagId', auth.authenticateToken, transactionTagController.deleteTransactionTag, util.handleErrors);
 
 // ========================== AUTH ==========================
 api.post('/auth/login', auth.loginMatch, authController.login, util.handleErrors);
