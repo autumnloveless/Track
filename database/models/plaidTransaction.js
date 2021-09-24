@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     transactionCode: DataTypes.STRING,
     transactionType: DataTypes.STRING,
     tags: DataTypes.STRING,
+    photoLinks: DataTypes.STRING,
   }, {});
   PlaidTransaction.associate = function(models) {
     PlaidTransaction.belongsTo(models.PlaidAccount, {

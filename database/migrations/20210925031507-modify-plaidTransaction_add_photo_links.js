@@ -5,7 +5,7 @@ module.exports = {
     return Promise.all([
       queryInterface.addColumn(
         'PlaidTransactions', // table name
-        'tags', // new field name
+        'photoLinks', // new field name
         {
           type: Sequelize.STRING,
           allowNull: true,
@@ -17,7 +17,7 @@ module.exports = {
   down(queryInterface, Sequelize) {
     // logic for reverting the changes
     return Promise.all([
-      queryInterface.removeColumn('PlaidTransactions', 'tags'),
+      queryInterface.removeColumn('PlaidTransactions', 'photoLinks'),
     ]);
   },
 };
