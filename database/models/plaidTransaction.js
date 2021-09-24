@@ -27,15 +27,13 @@ module.exports = (sequelize, DataTypes) => {
     pendingTransactionId: DataTypes.STRING,
     accountOwner: DataTypes.STRING,
     transactionCode: DataTypes.STRING,
-    transactionType: DataTypes.STRING
+    transactionType: DataTypes.STRING,
+    tags: DataTypes.STRING,
   }, {});
   PlaidTransaction.associate = function(models) {
     PlaidTransaction.belongsTo(models.PlaidAccount, {
       foreignKey: 'accountId',
       targetKey:'accountId'
-    });
-    PlaidTransaction.hasMany(models.TransactionTag, {
-      foreignKey: 'plaidTransactionId',
     });
   };
   return PlaidTransaction;

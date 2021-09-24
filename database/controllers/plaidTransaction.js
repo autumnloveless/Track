@@ -12,7 +12,7 @@ exports.bulkCreate = async (transactions) => {
 };
 
 exports.find = async (id) => {
-  const transaction = await models.PlaidTransaction.findOne({ where: { id: id }, include: [ models.PlaidAccount, models.TransactionTag] });
+  const transaction = await models.PlaidTransaction.findOne({ where: { id: id }, include: [ models.PlaidAccount] });
   return transaction ? { success: true, transaction: transaction } : { success: false, error: "Transaction Not Found" };
 };
 
@@ -23,8 +23,8 @@ exports.bulkFind = async (ids) => {
 
 exports.list = async (query = null) => {
   const transactions = query
-    ? await models.PlaidTransaction.findAll({ order: [ ['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']], where: query, include: [ models.PlaidAccount, models.TransactionTag] })
-    : await models.PlaidTransaction.findAll({ order: [ ['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']], include: [ models.PlaidAccount, models.TransactionTag] });
+    ? await models.PlaidTransaction.findAll({ order: [ ['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']], where: query, include: [ models.PlaidAccount] })
+    : await models.PlaidTransaction.findAll({ order: [ ['date', 'DESC'], ['createdAt', 'DESC'], ['name', 'DESC']], include: [ models.PlaidAccount] });
     if (transactions) {
     return { success: true, transactions: transactions };
   } else {
